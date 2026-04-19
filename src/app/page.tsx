@@ -1,125 +1,181 @@
 import Link from "next/link";
 import { listStudySets, usingMockData } from "@/lib/data";
-import AccountSyncPanel from "@/components/account-sync-panel";
-import FamilyAccessPanel from "@/components/family-access-panel";
-import SetCatalog from "@/components/set-catalog";
-import StudentDashboard from "@/components/student-dashboard";
-import TelcA2Plan from "@/components/telc-a2-plan";
+import TopNav from "@/components/top-nav";
+import HomeSetGrid from "@/components/home-set-grid";
+
+type Feature = {
+  href: string;
+  title: string;
+  description: string;
+  badge: string;
+  badgeClass: string;
+};
+
+const features: Feature[] = [
+  {
+    href: "/ai-workbench",
+    title: "AI Çalışma Tezgâhı",
+    description:
+      "PDF, DOCX veya not dosyalarını yükle; özet, sözlük, flashcard ve quiz olarak otomatik üretilsin.",
+    badge: "Yapay zeka",
+    badgeClass: "chip-primary",
+  },
+  {
+    href: "/create",
+    title: "Kendi Setini Oluştur",
+    description:
+      "Kelime, kalıp ve cümleleri kart olarak ekle; çalışma ve quiz modlarında pratik yap.",
+    badge: "Manuel",
+    badgeClass: "chip-accent",
+  },
+  {
+    href: "/classroom",
+    title: "Sınıf Modu",
+    description:
+      "Öğretmen ve sınıf arkadaşlarınla canlı çalışma odası, ortak setler ve ilerleme paylaşımı.",
+    badge: "Birlikte",
+    badgeClass: "chip-success",
+  },
+  {
+    href: "/parent",
+    title: "Veli Paneli",
+    description:
+      "Çocuğunun çalışma süresini, doğruluk oranını ve hedeflerini güvenli şekilde takip et.",
+    badge: "Veli",
+    badgeClass: "chip-warning",
+  },
+  {
+    href: "/analytics",
+    title: "Çalışma Analitiği",
+    description:
+      "Haftalık aktivite, doğruluk eğilimi ve odak alanlarını tek bir panelde gör.",
+    badge: "İçgörü",
+    badgeClass: "chip",
+  },
+];
 
 export default async function HomePage() {
   const studySets = await listStudySets();
+  const totalCards = studySets.reduce((sum, set) => sum + set.cardCount, 0);
 
   return (
-    <div className="relative min-h-screen overflow-hidden pb-16">
-      <div className="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-amber-200/70 blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 top-36 h-72 w-72 rounded-full bg-teal-200/70 blur-3xl" />
+    <div className="flex min-h-screen flex-col">
+      <TopNav active="/" />
 
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 pt-8">
-        <Link href="/" className="font-display text-3xl tracking-tight text-slate-900">
-          LETMEQUIZ
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/classroom"
-            className="rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
-          >
-            Class Mode
-          </Link>
-          <Link
-            href="/parent"
-            className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100"
-          >
-            Parent Mode
-          </Link>
-          <Link
-            href="/ai-workbench"
-            className="rounded-full border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800 transition hover:bg-cyan-100"
-          >
-            AI Workbench
-          </Link>
-          <Link
-            href="/analytics"
-            className="rounded-full border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-800 transition hover:bg-violet-100"
-          >
-            Analytics
-          </Link>
-          <Link
-            href="/create"
-            className="rounded-full border border-slate-900 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"
-          >
-            New Set
-          </Link>
-        </div>
-      </header>
+      <main className="app-container flex-1 pb-24 pt-10 md:pt-14">
+        <section className="grid items-end gap-8 md:grid-cols-[1.3fr_1fr]">
+          <div>
+            <span className="chip chip-primary">
+              <span className="status-dot live" /> Dil öğrenme stüdyosu
+            </span>
+            <h1 className="h-display mt-5 text-4xl md:text-6xl">
+              Notlarını AI ile dakikalar içinde{" "}
+              <span style={{ color: "var(--primary)" }}>çalışılabilir</span> hale getir.
+            </h1>
+            <p className="mt-5 max-w-2xl text-base text-[color:var(--fg-muted)] md:text-lg">
+              LetMeQuiz; flashcard, quiz, AI özet ve sınıf modunu tek bir sade arayüzde
+              birleştirir. Almanca, İngilizce ya da kendi notların — hepsi için profesyonel
+              bir çalışma akışı.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/ai-workbench" className="btn btn-primary btn-lg">
+                AI ile başla
+              </Link>
+              <Link href="/create" className="btn btn-secondary btn-lg">
+                Boş set oluştur
+              </Link>
+            </div>
 
-      <main className="mx-auto w-full max-w-6xl px-6">
-        <section className="relative mt-8 overflow-hidden rounded-[2.2rem] border border-black/10 bg-white/75 p-8 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.8)] backdrop-blur md:p-12">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-amber-200/60 blur-3xl" />
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-600">Study Better</p>
-          <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight text-slate-900 md:text-6xl">
-            Build your own flashcard arena and practice in quiz mode.
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-700 md:text-lg">
-            LetMeQuiz is a web app for creating card sets, flipping terms rapidly, and testing your recall with multiple-choice rounds.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/create"
-              className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-            >
-              Create First Set
-            </Link>
-            <Link
-              href="/ai-workbench"
-              className="rounded-2xl border border-cyan-300 bg-cyan-50 px-5 py-3 text-sm font-semibold text-cyan-800 transition hover:bg-cyan-100"
-            >
-              Upload Notes with AI
-            </Link>
-            <Link
-              href="/classroom"
-              className="rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
-            >
-              Open Class Mode
-            </Link>
-            <Link
-              href="/parent"
-              className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-100"
-            >
-              Open Parent Mode
-            </Link>
-            <Link
-              href="/analytics"
-              className="rounded-2xl border border-violet-300 bg-violet-50 px-5 py-3 text-sm font-semibold text-violet-800 transition hover:bg-violet-100"
-            >
-              Open Analytics
-            </Link>
-            <a
-              href="https://supabase.com"
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-            >
-              Free DB: Supabase
-            </a>
+            {usingMockData ? (
+              <p className="mt-5 inline-flex items-center gap-2 text-sm text-[color:var(--fg-muted)]">
+                <span className="status-dot warn" /> Demo modu aktif — Supabase değişkenleri tanımlı değil.
+              </p>
+            ) : null}
           </div>
 
-          {usingMockData ? (
-            <p className="mt-4 inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-              Demo mode active: no Supabase env variables found.
-            </p>
-          ) : null}
+          <div className="surface p-5 md:p-6">
+            <p className="text-sm font-semibold text-[color:var(--fg-muted)]">Kütüphanen</p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="surface-muted p-4">
+                <p className="text-xs uppercase tracking-wide text-[color:var(--fg-subtle)]">Set</p>
+                <p className="mt-1 text-2xl font-semibold">{studySets.length}</p>
+              </div>
+              <div className="surface-muted p-4">
+                <p className="text-xs uppercase tracking-wide text-[color:var(--fg-subtle)]">Kart</p>
+                <p className="mt-1 text-2xl font-semibold">{totalCards}</p>
+              </div>
+            </div>
+            <hr className="divider" />
+            <p className="text-sm font-semibold text-[color:var(--fg-muted)]">Hızlı eylemler</p>
+            <div className="mt-3 grid gap-2">
+              <Link href="/ai-workbench" className="btn btn-secondary justify-between">
+                Notlarımı yükle <span aria-hidden>→</span>
+              </Link>
+              <Link href="/create" className="btn btn-secondary justify-between">
+                Yeni set oluştur <span aria-hidden>→</span>
+              </Link>
+              <Link href="/analytics" className="btn btn-ghost justify-between">
+                İstatistiklerimi gör <span aria-hidden>→</span>
+              </Link>
+            </div>
+          </div>
         </section>
 
-        <StudentDashboard setCount={studySets.length} />
+        <section className="mt-16">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="section-title">Tek bir uygulama, eksiksiz akış</h2>
+              <p className="section-subtitle">
+                Çalışmak, paylaşmak ve takip etmek için ihtiyacın olan her şey.
+              </p>
+            </div>
+          </div>
 
-        <FamilyAccessPanel />
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <Link key={feature.href} href={feature.href} className="card card-hover flex h-full flex-col">
+                <span className={`chip ${feature.badgeClass} self-start`}>{feature.badge}</span>
+                <h3 className="mt-4 text-lg font-semibold">{feature.title}</h3>
+                <p className="mt-2 text-sm text-[color:var(--fg-muted)]">{feature.description}</p>
+                <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[color:var(--primary)]">
+                  Aç <span aria-hidden>→</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-        <TelcA2Plan />
+        <section className="mt-16">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="section-title">Çalışma setlerin</h2>
+              <p className="section-subtitle">
+                {studySets.length === 0
+                  ? "Henüz set yok. AI ile veya elle ilk setini oluştur."
+                  : `${studySets.length} set kütüphanende.`}
+              </p>
+            </div>
+            <Link href="/create" className="btn btn-secondary btn-sm">
+              Yeni set
+            </Link>
+          </div>
 
-        <AccountSyncPanel />
-
-        <SetCatalog sets={studySets} />
+          <div className="mt-6">
+            <HomeSetGrid sets={studySets} />
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t border-[color:var(--border)] py-8">
+        <div className="app-container flex flex-col items-center justify-between gap-3 text-sm text-[color:var(--fg-muted)] md:flex-row">
+          <p>LetMeQuiz · {new Date().getFullYear()}</p>
+          <div className="flex gap-4">
+            <Link href="/ai-workbench" className="hover:text-[color:var(--fg)]">AI Çalışma</Link>
+            <Link href="/analytics" className="hover:text-[color:var(--fg)]">Analiz</Link>
+            <Link href="/classroom" className="hover:text-[color:var(--fg)]">Sınıf</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

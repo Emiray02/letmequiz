@@ -2,6 +2,15 @@
 
 LetMeQuiz is a web-based flashcard and quiz platform inspired by modern study apps.
 
+## Project Description
+
+LetMeQuiz is an AI-supported learning platform that combines flashcards, quiz practice, class management,
+parent monitoring, adaptive planning, and cloud sync in one Next.js application.
+
+### Suggested GitHub About Description
+
+AI-supported flashcard, quiz, classroom, parent-monitoring, and analytics platform built with Next.js and Supabase.
+
 ## Features
 
 - Create custom study sets with terms and definitions

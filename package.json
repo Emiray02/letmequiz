@@ -2,6 +2,12 @@
   "name": "letmequiz",
   "version": "0.1.0",
   "private": true,
+  "description": "AI-supported flashcard, quiz, and classroom learning platform with analytics, parent monitoring, and cloud sync.",
+  "homepage": "https://github.com/Emiray02/letmequiz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Emiray02/letmequiz.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

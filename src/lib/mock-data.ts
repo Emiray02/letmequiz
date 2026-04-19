@@ -1,109 +1,153 @@
 import type { CreateSetInput, StudySet, StudySetSummary } from "@/types/study";
 
-const seedSetId = "seed-tr-101";
-const germanSeedSetId = "seed-de-a2-101";
+/**
+ * Demo Almanca setleri. Supabase yapılandırılmadığında kullanılır.
+ * Veriler gerçek sınav (telc / Goethe) odaklı, CEFR seviyelendirmeli.
+ */
+
+function makeSet(
+  id: string,
+  title: string,
+  description: string,
+  cards: Array<[string, string]>,
+  daysAgo = 0,
+): StudySet {
+  const created = new Date(Date.now() - daysAgo * 86_400_000).toISOString();
+  return {
+    id,
+    title,
+    description,
+    createdAt: created,
+    cards: cards.map(([term, definition], index) => ({
+      id: `${id}-c${index + 1}`,
+      term,
+      definition,
+      position: index,
+    })),
+  };
+}
 
 let mockSets: StudySet[] = [
-  {
-    id: germanSeedSetId,
-    title: "Deutsch TELC A2 Starter",
-    description: "telc A2 icin temel kaliplar, gunluk iletisim ve kisa sinav odakli kelimeler.",
-    createdAt: new Date().toISOString(),
-    cards: [
-      {
-        id: "seed-de-card-1",
-        term: "einen Termin vereinbaren",
-        definition: "Randevu ayarlamak",
-        position: 0,
-      },
-      {
-        id: "seed-de-card-2",
-        term: "Wie komme ich zum Bahnhof?",
-        definition: "Istasyona nasil giderim?",
-        position: 1,
-      },
-      {
-        id: "seed-de-card-3",
-        term: "Ich haette gern...",
-        definition: "... istemek icin nazik siparis kalibi",
-        position: 2,
-      },
-      {
-        id: "seed-de-card-4",
-        term: "sich bewerben",
-        definition: "is basvurusu yapmak",
-        position: 3,
-      },
-      {
-        id: "seed-de-card-5",
-        term: "Seit wann lernst du Deutsch?",
-        definition: "Ne zamandan beri Almanca ogreniyorsun?",
-        position: 4,
-      },
-      {
-        id: "seed-de-card-6",
-        term: "Ich habe Kopfschmerzen.",
-        definition: "Basim agriyor.",
-        position: 5,
-      },
-      {
-        id: "seed-de-card-7",
-        term: "Koennen Sie das bitte wiederholen?",
-        definition: "Bunu lutfen tekrar eder misiniz?",
-        position: 6,
-      },
-      {
-        id: "seed-de-card-8",
-        term: "am Wochenende",
-        definition: "hafta sonunda",
-        position: 7,
-      },
-      {
-        id: "seed-de-card-9",
-        term: "frueher / spaeter",
-        definition: "daha erken / daha sonra",
-        position: 8,
-      },
-      {
-        id: "seed-de-card-10",
-        term: "Ich interessiere mich fuer ...",
-        definition: "... ile ilgileniyorum",
-        position: 9,
-      },
+  makeSet(
+    "deu-a1-grundwortschatz",
+    "A1 · Temel Kelime Hazinesi",
+    "Goethe A1 ve telc A1 sınavlarının ilk 200 kelimesinden seçmeler.",
+    [
+      ["der Tag", "gün"],
+      ["die Woche", "hafta"],
+      ["der Monat", "ay"],
+      ["das Jahr", "yıl"],
+      ["die Familie", "aile"],
+      ["der Vater", "baba"],
+      ["die Mutter", "anne"],
+      ["das Kind", "çocuk"],
+      ["der Bruder", "erkek kardeş"],
+      ["die Schwester", "kız kardeş"],
+      ["wohnen", "ikamet etmek"],
+      ["arbeiten", "çalışmak"],
+      ["lernen", "öğrenmek"],
+      ["sprechen", "konuşmak"],
+      ["verstehen", "anlamak"],
     ],
-  },
-  {
-    id: seedSetId,
-    title: "Turkce Kelime Hazinesi",
-    description: "Sinav oncesi hizli tekrar icin temel kavramlar.",
-    createdAt: new Date().toISOString(),
-    cards: [
-      {
-        id: "seed-card-1",
-        term: "Mukayese",
-        definition: "Iki seyi karsilastirarak degerlendirme yapma.",
-        position: 0,
-      },
-      {
-        id: "seed-card-2",
-        term: "Mecaz",
-        definition: "Bir sozcugun gercek anlami disinda kullanilmasi.",
-        position: 1,
-      },
-      {
-        id: "seed-card-3",
-        term: "Istiare",
-        definition: "Benzetmenin yalnizca bir ogesiyle yapilmasi.",
-        position: 2,
-      },
-      {
-        id: "seed-card-4",
-        term: "Tariz",
-        definition: "Sozun tersini kastederek ince alay yapma.",
-        position: 3,
-      },
+    1,
+  ),
+  makeSet(
+    "deu-a1-begruessung",
+    "A1 · Selamlaşma & Tanışma",
+    "Günlük hayatta ilk konuşmalar için kalıplar.",
+    [
+      ["Guten Morgen!", "Günaydın!"],
+      ["Guten Tag!", "İyi günler!"],
+      ["Guten Abend!", "İyi akşamlar!"],
+      ["Wie heißt du?", "Adın ne?"],
+      ["Ich heiße ...", "Benim adım ..."],
+      ["Woher kommen Sie?", "Nerelisiniz?"],
+      ["Ich komme aus der Türkei.", "Türkiye’denim."],
+      ["Wo wohnen Sie?", "Nerede oturuyorsunuz?"],
+      ["Sprechen Sie Englisch?", "İngilizce konuşur musunuz?"],
+      ["Können Sie das bitte wiederholen?", "Lütfen tekrar eder misiniz?"],
     ],
-  },
+    2,
+  ),
+  makeSet(
+    "deu-a2-alltag",
+    "A2 · Günlük Hayat & Hizmetler",
+    "Marketten doktora, ulaşımdan randevuya — telc A2 odaklı.",
+    [
+      ["einen Termin vereinbaren", "randevu ayarlamak"],
+      ["beim Arzt", "doktorda"],
+      ["die Apotheke", "eczane"],
+      ["die Krankenkasse", "sağlık sigortası"],
+      ["die Rechnung", "fatura"],
+      ["bar bezahlen", "nakit ödemek"],
+      ["mit Karte zahlen", "kart ile ödemek"],
+      ["Ich hätte gern ...", "... rica ediyorum (nazik istek)"],
+      ["Wie komme ich zum Bahnhof?", "İstasyona nasıl giderim?"],
+      ["umsteigen", "aktarma yapmak"],
+      ["die Haltestelle", "durak"],
+      ["der Fahrplan", "sefer çizelgesi"],
+      ["sich bewerben", "iş başvurusu yapmak"],
+      ["der Lebenslauf", "özgeçmiş"],
+      ["das Vorstellungsgespräch", "iş görüşmesi"],
+    ],
+    3,
+  ),
+  makeSet(
+    "deu-b1-arbeit",
+    "B1 · İş Hayatı & Mesleki İletişim",
+    "telc B1 Beruf ve Goethe Zertifikat B1 için ofis Almancası.",
+    [
+      ["die Besprechung", "toplantı"],
+      ["die Tagesordnung", "gündem"],
+      ["sich auf etwas einigen", "bir konuda anlaşmak"],
+      ["einen Vorschlag machen", "öneri sunmak"],
+      ["die Frist einhalten", "son tarihe uymak"],
+      ["der Vorgesetzte", "amir"],
+      ["der Kollege / die Kollegin", "iş arkadaşı"],
+      ["zuständig sein für ...", "... ile ilgilenmek / sorumlu olmak"],
+      ["die Verantwortung übernehmen", "sorumluluk almak"],
+      ["sich krankmelden", "hastalık bildirmek"],
+      ["Urlaub beantragen", "izin talep etmek"],
+      ["die Gehaltserhöhung", "maaş zammı"],
+    ],
+    5,
+  ),
+  makeSet(
+    "deu-modal-verben",
+    "Modalverben · Çekimli Tablo",
+    "können, müssen, dürfen, sollen, wollen, mögen — Präsens çekim örnekleri.",
+    [
+      ["ich kann", "yapabilirim"],
+      ["du kannst", "yapabilirsin"],
+      ["er/sie/es kann", "yapabilir"],
+      ["wir können", "yapabiliriz"],
+      ["ich muss", "yapmak zorundayım"],
+      ["du musst", "yapmak zorundasın"],
+      ["ich darf", "yapmama izin var"],
+      ["ich soll", "yapmam gerekiyor"],
+      ["ich will", "istiyorum (kararlı)"],
+      ["ich möchte", "isterim (nazik)"],
+    ],
+    7,
+  ),
+  makeSet(
+    "deu-praepositionen",
+    "Präpositionen · Yönelme & Bulunma",
+    "Wechselpräpositionen: an, auf, hinter, in, neben, über, unter, vor, zwischen.",
+    [
+      ["an der Wand", "duvarda"],
+      ["an die Wand (hängen)", "duvara (asmak)"],
+      ["auf dem Tisch", "masanın üstünde"],
+      ["auf den Tisch (legen)", "masanın üstüne (koymak)"],
+      ["in der Schule", "okulda"],
+      ["in die Schule (gehen)", "okula (gitmek)"],
+      ["zwischen den Häusern", "evlerin arasında"],
+      ["zwischen die Häuser (stellen)", "evlerin arasına (koymak)"],
+      ["über dem Bett", "yatağın üstünde (asılı)"],
+      ["unter dem Stuhl", "sandalyenin altında"],
+    ],
+    9,
+  ),
 ];
 
 function cloneSet(set: StudySet): StudySet {

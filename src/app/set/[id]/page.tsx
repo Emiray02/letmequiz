@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import StudyStudio from "@/components/study-studio";
 import SetExportPanel from "@/components/set-export-panel";
+import TopNav from "@/components/top-nav";
 import { getStudySetById } from "@/lib/data";
 
 type PageProps = {
@@ -16,42 +17,46 @@ export default async function StudySetPage({ params }: PageProps) {
     notFound();
   }
 
+  const m = set.title.match(/\b(A1|A2|B1|B2|C1|C2)\b/i);
+  const code = m ? m[1].toUpperCase() : null;
+
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 py-10">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/"
-          className="rounded-full border border-slate-300 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-        >
-          Back to Home
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/classroom?setId=${set.id}`}
-            className="rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
-          >
-            Assign To Class
-          </Link>
-          <Link
-            href={`/quiz/${set.id}`}
-            className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-          >
-            Open Quiz Mode
-          </Link>
+    <>
+      <TopNav active="/library" />
+      <main className="app-main app-container pt-8 md:pt-12">
+        <nav className="text-sm text-[color:var(--fg-muted)] flex items-center gap-2">
+          <Link href="/library" className="hover:text-[color:var(--fg)]">Kütüphane</Link>
+          <span>›</span>
+          <span className="text-[color:var(--fg)]">{set.title}</span>
+        </nav>
+
+        <section className="mt-4 surface p-6 md:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                {code ? <span className={`cefr cefr-${code.toLowerCase()}`}>{code}</span> : <span className="chip">Set</span>}
+                <span className="chip">{set.cards.length} kart</span>
+              </div>
+              <h1 className="h-display mt-3 text-3xl md:text-4xl">{set.title}</h1>
+              <p className="mt-2 max-w-3xl text-[color:var(--fg-muted)]">
+                {set.description || "Açıklama yok."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href={`/classroom?setId=${set.id}`} className="btn btn-secondary">Sınıfa ata</Link>
+              <Link href={`/quiz/${set.id}`} className="btn btn-primary">Quiz başlat</Link>
+            </div>
+          </div>
+        </section>
+
+        <div className="mt-6">
+          <StudyStudio set={set} />
         </div>
-      </div>
 
-      <section className="mb-5 rounded-[2rem] border border-black/10 bg-white/75 p-8 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.8)] backdrop-blur">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-          Learning Studio
-        </p>
-        <h1 className="mt-2 font-display text-4xl text-slate-900">{set.title}</h1>
-        <p className="mt-3 max-w-3xl text-slate-700">{set.description || "No description provided."}</p>
-      </section>
-
-      <StudyStudio set={set} />
-
-      <SetExportPanel set={set} />
-    </div>
+        <div className="mt-6">
+          <SetExportPanel set={set} />
+        </div>
+      </main>
+    </>
   );
 }

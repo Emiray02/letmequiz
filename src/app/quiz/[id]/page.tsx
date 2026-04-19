@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import QuizPlayer from "@/components/quiz-player";
+import TopNav from "@/components/top-nav";
 import { getStudySetById } from "@/lib/data";
 
 type PageProps = {
@@ -16,31 +17,32 @@ export default async function QuizPage({ params }: PageProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 py-10">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/"
-          className="rounded-full border border-slate-300 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-        >
-          Back to Home
-        </Link>
-        <Link
-          href={`/set/${set.id}`}
-          className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-        >
-          Back to Flashcards
-        </Link>
-      </div>
+    <>
+      <TopNav active="/library" />
+      <main className="app-main app-container pt-8 md:pt-12">
+        <nav className="text-sm text-[color:var(--fg-muted)] flex items-center gap-2">
+          <Link href="/library" className="hover:text-[color:var(--fg)]">Kütüphane</Link>
+          <span>›</span>
+          <Link href={`/set/${set.id}`} className="hover:text-[color:var(--fg)]">{set.title}</Link>
+          <span>›</span>
+          <span className="text-[color:var(--fg)]">Quiz</span>
+        </nav>
 
-      <section className="mb-5 rounded-[2rem] border border-black/10 bg-white/75 p-8 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.8)] backdrop-blur">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Quiz Mode</p>
-        <h1 className="mt-2 font-display text-4xl text-slate-900">{set.title}</h1>
-        <p className="mt-3 max-w-3xl text-slate-700">
-          Pick the correct definition for each term and track your score live.
-        </p>
-      </section>
+        <section className="mt-4 surface p-6 md:p-8">
+          <span className="chip chip-primary">Quiz modu</span>
+          <h1 className="h-display mt-3 text-3xl md:text-4xl">{set.title}</h1>
+          <p className="mt-2 max-w-3xl text-[color:var(--fg-muted)]">
+            Her terim için doğru tanımı seç; skorun anlık görüntülenir.
+          </p>
+          <div className="mt-4 flex gap-2">
+            <Link href={`/set/${set.id}`} className="btn btn-secondary btn-sm">← Karta dön</Link>
+          </div>
+        </section>
 
-      <QuizPlayer set={set} />
-    </div>
+        <div className="mt-6">
+          <QuizPlayer set={set} />
+        </div>
+      </main>
+    </>
   );
 }

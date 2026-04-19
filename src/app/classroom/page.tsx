@@ -11,9 +11,9 @@ export default async function ClassroomPage({ searchParams }: PageProps) {
   const sets = await listStudySets();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
       <TopNav active="/classroom" />
-      <main className="app-container flex-1 pb-24 pt-10 md:pt-14">
+      <main className="app-main app-container pt-8 md:pt-12">
         <div className="max-w-3xl">
           <span className="chip chip-success">Sınıf modu</span>
           <h1 className="h-display mt-4 text-3xl md:text-5xl">
@@ -27,6 +27,6 @@ export default async function ClassroomPage({ searchParams }: PageProps) {
           <ClassroomHub sets={sets} initialSetId={params.setId} />
         </div>
       </main>
-    </div>
+    </>
   );
 }

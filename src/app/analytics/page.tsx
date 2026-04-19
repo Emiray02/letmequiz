@@ -3,11 +3,11 @@ import TopNav from "@/components/top-nav";
 
 export default function AnalyticsPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
       <TopNav active="/analytics" />
-      <main className="app-container flex-1 pb-24 pt-10 md:pt-14">
+      <main className="app-main app-container pt-8 md:pt-12">
         <div className="max-w-3xl">
-          <span className="chip">Analiz</span>
+          <span className="chip">İlerleme</span>
           <h1 className="h-display mt-4 text-3xl md:text-5xl">
             Çalışma sinyallerin ve etkileşim eğilimlerin.
           </h1>
@@ -19,6 +19,6 @@ export default function AnalyticsPage() {
           <AnalyticsDashboard />
         </div>
       </main>
-    </div>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
 import PwaRegister from "@/components/pwa-register";
 import BottomNav from "@/components/bottom-nav";
+import ProfileGate from "@/components/profile-gate";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -43,8 +44,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="tr" className={`${spaceGrotesk.variable} ${fraunces.variable} h-full antialiased`}>
       <body className="min-h-full">
         <PwaRegister />
-        <div className="app-shell">{children}</div>
-        <BottomNav />
+        <ProfileGate>
+          <div className="app-shell">{children}</div>
+          <BottomNav />
+        </ProfileGate>
       </body>
     </html>
   );

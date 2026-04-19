@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { navItems } from "./bottom-nav";
+import ProfileMenu from "./profile-menu";
 
 type TopNavProps = {
   /** Manuel aktif yolu zorla (server bileşenlerinden gerekirse). */
@@ -64,6 +65,7 @@ export default function TopNav({ active }: TopNavProps) {
             <Link href="/deutsch" className="btn btn-primary btn-sm">
               Çalışmaya başla
             </Link>
+            <ProfileMenu />
             <button
               type="button"
               className="drawer-toggle"

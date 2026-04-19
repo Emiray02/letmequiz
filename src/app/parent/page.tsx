@@ -1,6 +1,7 @@
 import FamilyAccessPanel from "@/components/family-access-panel";
 import ParentMonitorDashboard from "@/components/parent-monitor-dashboard";
 import TopNav from "@/components/top-nav";
+import RoleGate from "@/components/role-gate";
 
 export default function ParentModePage() {
   return (
@@ -17,8 +18,10 @@ export default function ParentModePage() {
           </p>
         </div>
         <div className="mt-8 grid gap-6">
-          <FamilyAccessPanel />
-          <ParentMonitorDashboard />
+          <RoleGate allow={["parent", "teacher"]}>
+            <FamilyAccessPanel />
+            <ParentMonitorDashboard />
+          </RoleGate>
         </div>
       </main>
     </>

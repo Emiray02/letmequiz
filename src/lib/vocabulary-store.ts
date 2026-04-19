@@ -3,8 +3,11 @@ import type {
   VocabularyTechniqueMap,
   VocabularyTechniqueProfile,
 } from "@/types/vocabulary";
+import { profileScopedKey } from "@/lib/profile-store";
 
-const VOCAB_KEY = "letmequiz.vocabulary.techniques";
+function vocabKey() {
+  return profileScopedKey("letmequiz.vocabulary.techniques");
+}
 
 type VocabularyStoreData = Record<string, VocabularyTechniqueMap>;
 
@@ -35,7 +38,7 @@ function safeReadStore(): VocabularyStoreData {
   }
 
   try {
-    const raw = window.localStorage.getItem(VOCAB_KEY);
+    const raw = window.localStorage.getItem(vocabKey());
     if (!raw) {
       return {};
     }
@@ -51,7 +54,7 @@ function safeWriteStore(value: VocabularyStoreData) {
   }
 
   try {
-    window.localStorage.setItem(VOCAB_KEY, JSON.stringify(value));
+    window.localStorage.setItem(vocabKey(), JSON.stringify(value));
   } catch {
     // Ignore storage write errors.
   }

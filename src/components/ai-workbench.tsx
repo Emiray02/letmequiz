@@ -107,7 +107,7 @@ export default function AiWorkbench() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/ai/status")
+    fetch("/api/ai/status", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!cancelled && data) setStatus(data as AiStatus);

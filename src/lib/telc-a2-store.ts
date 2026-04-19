@@ -20,8 +20,14 @@ export type TelcSectionScores = {
   createdAt: string;
 };
 
-const TELC_EXAM_DATE_KEY = "letmequiz.telcA2.examDate";
-const TELC_RESULTS_KEY = "letmequiz.telcA2.mockResults";
+import { profileScopedKey } from "@/lib/profile-store";
+
+function telcExamDateKey() {
+  return profileScopedKey("letmequiz.telcA2.examDate");
+}
+function telcResultsKey() {
+  return profileScopedKey("letmequiz.telcA2.mockResults");
+}
 
 function isBrowser() {
   return typeof window !== "undefined";
@@ -58,15 +64,15 @@ function safeWrite<T>(key: string, value: T) {
 }
 
 export function getTelcExamDate(): string {
-  return safeRead<string>(TELC_EXAM_DATE_KEY, "");
+  return safeRead<string>(telcExamDateKey(), "");
 }
 
 export function setTelcExamDate(value: string) {
-  safeWrite(TELC_EXAM_DATE_KEY, value);
+  safeWrite(telcExamDateKey(), value);
 }
 
 export function getTelcMockResults(limit = 20): TelcSectionScores[] {
-  const items = safeRead<TelcSectionScores[]>(TELC_RESULTS_KEY, []);
+  const items = safeRead<TelcSectionScores[]>(telcResultsKey(), []);
   return items
     .filter((item) => typeof item?.overall === "number" && typeof item?.createdAt === "string")
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -75,7 +81,7 @@ export function getTelcMockResults(limit = 20): TelcSectionScores[] {
 
 export function addTelcMockResult(item: TelcSectionScores) {
   const next = [item, ...getTelcMockResults(200)].slice(0, 200);
-  safeWrite(TELC_RESULTS_KEY, next);
+  safeWrite(telcResultsKey(), next);
 }
 
 export function getTelcResultTrend(limit = 12): Array<{

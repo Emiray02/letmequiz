@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ProfileMenu from "./profile-menu";
 import AccountButton from "./account-button";
 import CloudSyncProvider from "./cloud-sync-provider";
+import { getMyProfile } from "@/lib/teacher-store";
 
 type NavItem = {
   href: string;
@@ -43,88 +44,76 @@ const I = {
 };
 
 /* --- Navigation structure ---------------------------------------- */
-type Section = { title: string; items: NavItem[] };
+/**
+ * Two-tier nav: a tiny essentials list (5–6 items) is always visible.
+ * Less-used pages live behind a collapsible "Daha fazla" section.
+ * The set of links depends on the user role (student vs teacher).
+ */
+type Section = { title: string; items: NavItem[]; collapsible?: boolean };
 
-const SECTIONS: Section[] = [
-  {
-    title: "Genel",
-    items: [
-      { href: "/", label: "Ana sayfa", icon: I.home },
-      { href: "/heute", label: "Bugün çalış (telc planı)", icon: I.target },
-      { href: "/tagesziel", label: "Bugünün hedefi", icon: I.target },
-      { href: "/woche", label: "Haftalık özet", icon: I.chart },
-      { href: "/community", label: "Lerngemeinschaft", icon: I.kids },
-    ],
-  },
-  {
-    title: "Günlük çalışma",
-    items: [
-      { href: "/wortschatz", label: "Wortschatz (SRS)", icon: I.brain },
-      { href: "/deutsch/artikel", label: "der · die · das", icon: I.letters },
-      { href: "/deutsch/verben", label: "Fiil çekim", icon: I.rotate },
-      { href: "/deutsch/diktat", label: "Diktat", icon: I.ear },
-      { href: "/deutsch/saetze", label: "Cümle kur", icon: I.blocks },
-      { href: "/cloze", label: "C-Test (Cloze)", icon: I.read },
-    ],
-  },
-  {
-    title: "Beceriler",
-    items: [
-      { href: "/skills/lesen", label: "Lesen — Okuma", icon: I.read },
-      { href: "/skills/hoeren", label: "Hören — Dinleme", icon: I.ear },
-      { href: "/skills/schreiben", label: "Schreiben — Yazma", icon: I.pen },
-      { href: "/skills/schreiben/vorlagen", label: "↳ Şablonlar", icon: I.pen },
-      { href: "/skills/sprechen", label: "Sprechen — Konuşma", icon: I.mic },
-      { href: "/skills/sprechen/rollenspiel", label: "↳ Rollenspiel (AI)", icon: I.mic },
-      { href: "/aussprache", label: "Aussprache (Mic)", icon: I.mic },
-      { href: "/denken", label: "Almanca düşün", icon: I.spark },
-    ],
-  },
-  {
-    title: "Gramer & Kelime",
-    items: [
-      { href: "/grammar", label: "Gramer atölyesi", icon: I.spark },
-      { href: "/grammar/lessons", label: "↳ Konu anlatımı", icon: I.book },
-      { href: "/grammar/konjugator", label: "↳ Konjugator", icon: I.rotate },
-      { href: "/grammar/doctor", label: "↳ Cümle doktoru", icon: I.spark },
-      { href: "/wortfamilie", label: "Wortfamilie", icon: I.layers },
-      { href: "/forgetting-curve", label: "Unutma eğrisi", icon: I.chart },
-      { href: "/fehlerheft", label: "Hata defterim", icon: I.book },
-    ],
-  },
-  {
-    title: "Sınava hazırlık",
-    items: [
-      { href: "/exam", label: "Sınav planım", icon: I.target },
-      { href: "/seviye", label: "Seviye testi", icon: I.target },
-      { href: "/materials", label: "telc materyalleri", icon: I.folder },
-      { href: "/clips", label: "Sitcom klipler", icon: I.film },
-      { href: "/news", label: "Almanca haberler", icon: I.read },
-    ],
-  },
-  {
-    title: "Araçlar",
-    items: [
-      { href: "/library", label: "Kütüphane", icon: I.book },
-      { href: "/ai-workbench", label: "AI Tezgâh", icon: I.spark },
-      { href: "/analytics", label: "İstatistikler", icon: I.chart },
-      { href: "/classroom", label: "Sınıf modu", icon: I.classroom },
-      { href: "/teacher", label: "Öğretmen paneli", icon: I.kids },
-      { href: "/student", label: "Ödevlerim", icon: I.book },
-      { href: "/data", label: "Veri yedek / içe aktar", icon: I.folder },
-      { href: "/auth", label: "Hesap & bulut sync", icon: I.spark },
-      { href: "/shortcuts", label: "Klavye kısayolları", icon: I.spark },
-    ],
-  },
+const STUDENT_PRIMARY: NavItem[] = [
+  { href: "/",            label: "Ana sayfa",        icon: I.home },
+  { href: "/heute",       label: "Bugün çalış",       icon: I.target },
+  { href: "/wortschatz",  label: "Wortschatz",       icon: I.brain },
+  { href: "/skills",      label: "Beceriler",        icon: I.layers },
+  { href: "/grammar",     label: "Gramer",           icon: I.spark },
+  { href: "/student",     label: "Ödev & öğretmenim", icon: I.kids },
 ];
 
+const STUDENT_MORE: NavItem[] = [
+  { href: "/grammar/lessons", label: "Konu anlatımı",    icon: I.book },
+  { href: "/exam",            label: "Sınav planı (eski)", icon: I.target },
+  { href: "/materials",       label: "telc materyalleri", icon: I.folder },
+  { href: "/clips",           label: "Sitcom klipler",    icon: I.film },
+  { href: "/news",            label: "Haberler",          icon: I.read },
+  { href: "/fehlerheft",      label: "Hata defterim",     icon: I.book },
+  { href: "/woche",           label: "Haftalık özet",     icon: I.chart },
+  { href: "/ai-workbench",    label: "AI Tezgâh",         icon: I.spark },
+  { href: "/library",         label: "Kütüphane",         icon: I.book },
+  { href: "/data",            label: "Veri yedek",        icon: I.folder },
+];
+
+const TEACHER_PRIMARY: NavItem[] = [
+  { href: "/",          label: "Ana sayfa",        icon: I.home },
+  { href: "/teacher",   label: "Öğretmen paneli",  icon: I.kids },
+  { href: "/library",   label: "Kütüphane",        icon: I.book },
+  { href: "/materials", label: "telc materyalleri", icon: I.folder },
+];
+
+const TEACHER_MORE: NavItem[] = [
+  { href: "/grammar/lessons", label: "Konu anlatımı", icon: I.book },
+  { href: "/ai-workbench",    label: "AI Tezgâh",     icon: I.spark },
+  { href: "/analytics",       label: "İstatistikler",  icon: I.chart },
+  { href: "/data",            label: "Veri yedek",    icon: I.folder },
+];
+
+function sectionsFor(role: "student" | "teacher"): Section[] {
+  if (role === "teacher") {
+    return [
+      { title: "Öğretmen", items: TEACHER_PRIMARY },
+      { title: "Daha fazla", items: TEACHER_MORE, collapsible: true },
+    ];
+  }
+  return [
+    { title: "Öğrenci", items: STUDENT_PRIMARY },
+    { title: "Daha fazla", items: STUDENT_MORE, collapsible: true },
+  ];
+}
+
 /** Mobile bottom nav — 5 most-used destinations only. */
-const BOTTOM: NavItem[] = [
-  { href: "/", label: "Ana", icon: I.home },
-  { href: "/tagesziel", label: "Bugün", icon: I.target },
-  { href: "/wortschatz", label: "Kelime", icon: I.brain },
-  { href: "/skills", label: "Beceri", icon: I.layers },
-  { href: "/fehlerheft", label: "Hatalar", icon: I.book },
+const BOTTOM_STUDENT: NavItem[] = [
+  { href: "/",           label: "Ana",       icon: I.home },
+  { href: "/heute",      label: "Bugün",     icon: I.target },
+  { href: "/wortschatz", label: "Kelime",    icon: I.brain },
+  { href: "/skills",     label: "Beceri",    icon: I.layers },
+  { href: "/student",    label: "Ödevler",   icon: I.book },
+];
+const BOTTOM_TEACHER: NavItem[] = [
+  { href: "/",           label: "Ana",       icon: I.home },
+  { href: "/teacher",    label: "Panel",     icon: I.kids },
+  { href: "/library",    label: "Setler",    icon: I.book },
+  { href: "/materials",  label: "telc",      icon: I.folder },
+  { href: "/ai-workbench", label: "AI",      icon: I.spark },
 ];
 
 function isPathActive(pathname: string, href: string): boolean {
@@ -136,6 +125,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [role, setRole] = useState<"student" | "teacher">("student");
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  // Detect role once on mount; default to "student" so first paint isn't blank.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const p = await getMyProfile();
+        if (!cancelled && p?.role === "teacher") setRole("teacher");
+      } catch { /* not signed in or supabase missing — keep student */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const SECTIONS = useMemo(() => sectionsFor(role), [role]);
+  const BOTTOM = role === "teacher" ? BOTTOM_TEACHER : BOTTOM_STUDENT;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -197,21 +203,40 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <span className="brand-mark" aria-hidden />
           <span>LetMeQuiz</span>
         </Link>
-        {SECTIONS.map((sec) => (
-          <div key={sec.title}>
-            <div className="sidebar-section">{sec.title}</div>
-            {sec.items.map((it) => (
-              <Link
-                key={it.href}
-                href={it.href}
-                className={`sidebar-link${isPathActive(pathname, it.href) ? " active" : ""}`}
-              >
-                {it.icon}
-                <span>{it.label}</span>
-              </Link>
-            ))}
-          </div>
-        ))}
+        {SECTIONS.map((sec) => {
+          const collapsed = sec.collapsible && !moreOpen;
+          return (
+            <div key={sec.title}>
+              {sec.collapsible ? (
+                <button
+                  type="button"
+                  className="sidebar-section"
+                  onClick={() => setMoreOpen((v) => !v)}
+                  style={{
+                    width: "100%", textAlign: "left", background: "transparent",
+                    border: 0, cursor: "pointer", padding: "0.5rem 0.625rem",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                  }}
+                >
+                  <span>{sec.title}</span>
+                  <span style={{ fontSize: "0.8rem" }}>{moreOpen ? "▲" : "▼"}</span>
+                </button>
+              ) : (
+                <div className="sidebar-section">{sec.title}</div>
+              )}
+              {!collapsed && sec.items.map((it) => (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  className={`sidebar-link${isPathActive(pathname, it.href) ? " active" : ""}`}
+                >
+                  {it.icon}
+                  <span>{it.label}</span>
+                </Link>
+              ))}
+            </div>
+          );
+        })}
         <div style={{ marginTop: "auto", padding: "1rem 0.625rem 0", display: "grid", gap: "0.5rem" }}>
           <AccountButton />
           <ProfileMenu />
@@ -271,21 +296,40 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </svg>
           </button>
         </div>
-        {SECTIONS.map((sec) => (
-          <div key={sec.title}>
-            <div className="sidebar-section">{sec.title}</div>
-            {sec.items.map((it) => (
-              <Link
-                key={it.href}
-                href={it.href}
-                className={`sidebar-link${isPathActive(pathname, it.href) ? " active" : ""}`}
-              >
-                {it.icon}
-                <span>{it.label}</span>
-              </Link>
-            ))}
-          </div>
-        ))}
+        {SECTIONS.map((sec) => {
+          const collapsed = sec.collapsible && !moreOpen;
+          return (
+            <div key={sec.title}>
+              {sec.collapsible ? (
+                <button
+                  type="button"
+                  className="sidebar-section"
+                  onClick={() => setMoreOpen((v) => !v)}
+                  style={{
+                    width: "100%", textAlign: "left", background: "transparent",
+                    border: 0, cursor: "pointer", padding: "0.5rem 0.625rem",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                  }}
+                >
+                  <span>{sec.title}</span>
+                  <span style={{ fontSize: "0.8rem" }}>{moreOpen ? "▲" : "▼"}</span>
+                </button>
+              ) : (
+                <div className="sidebar-section">{sec.title}</div>
+              )}
+              {!collapsed && sec.items.map((it) => (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  className={`sidebar-link${isPathActive(pathname, it.href) ? " active" : ""}`}
+                >
+                  {it.icon}
+                  <span>{it.label}</span>
+                </Link>
+              ))}
+            </div>
+          );
+        })}
       </aside>
 
       {/* Mobile bottom nav */}

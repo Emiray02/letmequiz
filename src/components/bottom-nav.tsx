@@ -51,10 +51,10 @@ function ChartIcon() {
 
 export const navItems: Item[] = [
   { href: "/", label: "Ana Sayfa", icon: <HomeIcon /> },
-  { href: "/library", label: "Kütüphane", icon: <BookIcon /> },
-  { href: "/deutsch", label: "Almanca", icon: <TrainerIcon /> },
-  { href: "/ai-workbench", label: "AI Tezgâh", icon: <SparkIcon /> },
-  { href: "/analytics", label: "İlerleme", icon: <ChartIcon /> },
+  { href: "/skills", label: "Beceriler", icon: <TrainerIcon /> },
+  { href: "/exam", label: "Sınav", icon: <ChartIcon /> },
+  { href: "/clips", label: "Klipler", icon: <SparkIcon /> },
+  { href: "/ai-workbench", label: "AI", icon: <BookIcon /> },
 ];
 
 export default function BottomNav() {

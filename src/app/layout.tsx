@@ -28,6 +28,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://letmequiz.vercel.app"),
   title: {
     default: "LetMeQuiz — Almanca öğrenme stüdyosu",
     template: "%s · LetMeQuiz",
@@ -37,6 +38,16 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   applicationName: "LetMeQuiz",
   keywords: ["almanca","deutsch","telc","goethe","der die das","flashcard","AI","dil öğrenme","quiz"],
+  alternates: { canonical: "https://letmequiz.vercel.app" },
+  openGraph: {
+    type: "website",
+    url: "https://letmequiz.vercel.app",
+    siteName: "LetMeQuiz",
+    title: "LetMeQuiz — Almanca öğrenme stüdyosu",
+    description:
+      "Sınav odaklı Almanca çalışma planı, AI geri bildirimli yazma/konuşma, sitcom kliplerle gerçek dil.",
+    locale: "tr_TR",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

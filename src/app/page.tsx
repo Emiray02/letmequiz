@@ -13,6 +13,30 @@ type Tool = {
 
 const tools: Tool[] = [
   {
+    href: "/exam",
+    emoji: "🎯",
+    title: "Sınav Planım",
+    desc: "telc/Goethe/ÖSD/TestDaF/DSH/YDS — sınav tarihi + kurum gir, dinamik plan otomatik gelsin.",
+    badge: "Yeni",
+    badgeClass: "chip-success",
+  },
+  {
+    href: "/skills",
+    emoji: "🧭",
+    title: "Beceri Modülleri",
+    desc: "Lesen · Hören · Schreiben · Sprechen — her biri AI geri bildirimli, ayrı ayrı çalışılır.",
+    badge: "4 modül",
+    badgeClass: "chip-primary",
+  },
+  {
+    href: "/clips",
+    emoji: "🎬",
+    title: "Sitcom Klipler",
+    desc: "Gerçek diyaloglarda kelime ve kalıbın nasıl kullanıldığını gör — Almanca + Türkçe çeviri.",
+    badge: "Comprehensible Input",
+    badgeClass: "chip-accent",
+  },
+  {
     href: "/deutsch/artikel",
     emoji: "📕",
     title: "der · die · das",
@@ -87,9 +111,9 @@ export default async function HomePage() {
               kendi notlarından üretilen quizler — hepsi tek, sade panelde.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/deutsch" className="btn btn-primary btn-lg">Çalışmaya başla</Link>
-              <Link href="/ai-workbench" className="btn btn-secondary btn-lg">Notlarımı yükle</Link>
-              <Link href="/library" className="btn btn-ghost btn-lg">Hazır setlere bak</Link>
+              <Link href="/exam" className="btn btn-primary btn-lg">Sınav planımı kur</Link>
+              <Link href="/skills" className="btn btn-secondary btn-lg">Beceri modülleri</Link>
+              <Link href="/clips" className="btn btn-ghost btn-lg">Sitcom klipler</Link>
             </div>
 
             {usingMockData ? (

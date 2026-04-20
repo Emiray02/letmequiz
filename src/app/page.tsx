@@ -21,6 +21,14 @@ const tools: Tool[] = [
     badgeClass: "chip-success",
   },
   {
+    href: "/materials",
+    emoji: "📂",
+    title: "Telc Materyalleri",
+    desc: "Einfach gut + Auf jeden Fall: 60+ Lesetext, Wortschatz, Hörtext PDF + 150+ ses kaydı.",
+    badge: "Telc",
+    badgeClass: "chip-warning",
+  },
+  {
     href: "/skills",
     emoji: "🧭",
     title: "Beceri Modülleri",

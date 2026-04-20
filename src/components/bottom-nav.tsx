@@ -53,8 +53,8 @@ export const navItems: Item[] = [
   { href: "/", label: "Ana Sayfa", icon: <HomeIcon /> },
   { href: "/skills", label: "Beceriler", icon: <TrainerIcon /> },
   { href: "/exam", label: "Sınav", icon: <ChartIcon /> },
-  { href: "/clips", label: "Klipler", icon: <SparkIcon /> },
-  { href: "/ai-workbench", label: "AI", icon: <BookIcon /> },
+  { href: "/materials", label: "Telc", icon: <BookIcon /> },
+  { href: "/ai-workbench", label: "AI", icon: <SparkIcon /> },
 ];
 
 export default function BottomNav() {

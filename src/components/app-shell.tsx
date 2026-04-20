@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ProfileMenu from "./profile-menu";
+import AccountButton from "./account-button";
+import CloudSyncProvider from "./cloud-sync-provider";
 
 type NavItem = {
   href: string;
@@ -107,6 +109,7 @@ const SECTIONS: Section[] = [
       { href: "/classroom", label: "Sınıf modu", icon: I.classroom },
       { href: "/parent", label: "Veli paneli", icon: I.kids },
       { href: "/data", label: "Veri yedek / içe aktar", icon: I.folder },
+      { href: "/auth", label: "Hesap & bulut sync", icon: I.spark },
       { href: "/shortcuts", label: "Klavye kısayolları", icon: I.spark },
     ],
   },
@@ -184,6 +187,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-shell">
+      <CloudSyncProvider />
       {/* Desktop sidebar */}
       <aside className="sidebar" aria-label="Birincil gezinme">
         <Link href="/" className="sidebar-brand">
@@ -205,7 +209,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </div>
         ))}
-        <div style={{ marginTop: "auto", padding: "1rem 0.625rem 0" }}>
+        <div style={{ marginTop: "auto", padding: "1rem 0.625rem 0", display: "grid", gap: "0.5rem" }}>
+          <AccountButton />
           <ProfileMenu />
         </div>
       </aside>
@@ -228,7 +233,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <span className="brand-mark" aria-hidden />
             <span>LetMeQuiz</span>
           </Link>
-          <ProfileMenu />
+          <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+            <AccountButton />
+            <ProfileMenu />
+          </div>
         </header>
 
         <main className="app-main">

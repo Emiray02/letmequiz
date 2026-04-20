@@ -48,10 +48,14 @@ export default function SkillFeedbackPanel({
   skill,
   defaultPrompt,
   level = "A2",
+  contextText,
+  contextLabel,
 }: {
   skill: Skill;
   defaultPrompt?: string;
   level?: string;
+  contextText?: string;
+  contextLabel?: string;
 }) {
   const labels = LABELS[skill];
   const [text, setText] = useState("");
@@ -101,7 +105,7 @@ export default function SkillFeedbackPanel({
       const res = await fetch("/api/ai/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ skill, text, prompt, level }),
+        body: JSON.stringify({ skill, text, prompt, level, contextText, contextLabel }),
       });
       if (!res.ok) {
         const err = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -127,6 +131,15 @@ export default function SkillFeedbackPanel({
           AI geri bildirim
         </span>
       </header>
+
+      {contextText ? (
+        <details className="surface-soft p-4 rounded-lg" open>
+          <summary className="cursor-pointer font-semibold text-sm">
+            📖 Kaynak: {contextLabel ?? "telc materyali"}
+          </summary>
+          <pre className="whitespace-pre-wrap text-sm leading-relaxed mt-3 max-h-72 overflow-auto font-sans">{contextText}</pre>
+        </details>
+      ) : null}
 
       <form onSubmit={handleSubmit} className="grid gap-4">
         <div>

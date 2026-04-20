@@ -12,6 +12,8 @@ type FeedbackBody = {
   prompt?: string;
   level?: string; // CEFR
   provider?: string;
+  contextText?: string;
+  contextLabel?: string;
 };
 
 type Correction = {
@@ -43,6 +45,9 @@ function buildPrompt(body: FeedbackBody, lang: string): string {
     `Skill being practiced: ${body.skill}.`,
     `Detected language of student's response: ${lang}.`,
     body.prompt ? `Original task prompt was:\n${body.prompt}` : "",
+    body.contextText
+      ? `SOURCE MATERIAL (${body.contextLabel ?? "telc reference"}):\n"""\n${body.contextText.slice(0, 3000)}\n"""\nGrade the student's answer AGAINST this source. Reward content fidelity, penalise invented facts.`
+      : "",
     `Student response:\n${body.text}`,
     "",
     "Return ONLY valid JSON matching this TypeScript type (no markdown, no commentary):",

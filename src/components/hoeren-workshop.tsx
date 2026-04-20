@@ -1,149 +1,178 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import SkillFeedbackPanel from "@/components/skill-feedback-panel";
-import type { AudioCollection } from "@/lib/materials-catalog";
+import {
+  ALL_LEVELS,
+  type Hoertext,
+  type Level,
+} from "@/lib/materials-data";
 
-type TranscriptLink = { name: string; url: string; level: string };
+type FlatTrack = { level: string; folder: string; folderUrl: string; trackName: string; url: string };
 
-const LEVELS = ["A1.1", "A1.2", "A2.1", "A2.2"] as const;
-type Level = (typeof LEVELS)[number];
+type Props = {
+  hoertexte: Hoertext[];
+  audio: FlatTrack[];
+};
 
-export default function HoerenWorkshop({
-  collections,
-  transcripts,
-}: {
-  collections: AudioCollection[];
-  transcripts: TranscriptLink[];
-}) {
+function trackNumberOf(h: Hoertext): number | null {
+  const m = h.track.match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function findAudioUrl(level: Level, trackNum: number | null, audio: FlatTrack[]): string | null {
+  if (trackNum == null) return null;
+  const padded = String(trackNum).padStart(3, "0");
+  const lvlKey = level.replace(".", "_");
+  const match = audio.find(
+    (a) => a.folder.includes(lvlKey) && a.trackName.includes(`Track_${padded}`),
+  );
+  return match?.url ?? null;
+}
+
+export default function HoerenWorkshop({ hoertexte, audio }: Props) {
   const [level, setLevel] = useState<Level>("A1.1");
-  const [trackUrl, setTrackUrl] = useState<string>("");
-  const [trackName, setTrackName] = useState<string>("");
-  const [rate, setRate] = useState<number>(1);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [revealed, setRevealed] = useState<Set<string>>(new Set());
 
-  const tracksForLevel = useMemo(
+  const filtered = useMemo(
     () =>
-      collections
-        .filter((c) => c.level === level)
-        .flatMap((c) => c.files.map((f) => ({ folder: c.folder, ...f }))),
-    [collections, level],
+      hoertexte
+        .filter((h) => h.level === level)
+        .sort((a, b) => {
+          if (a.lektion !== b.lektion) return a.lektion - b.lektion;
+          return a.aufgabe.localeCompare(b.aufgabe);
+        }),
+    [hoertexte, level],
   );
 
-  const transcriptForLevel = transcripts.find((t) => t.level === level);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const active = filtered.find((h) => h.id === activeId) ?? filtered[0] ?? null;
+  const activeAudioUrl = active ? findAudioUrl(active.level, trackNumberOf(active), audio) : null;
+  const isRevealed = active ? revealed.has(active.id) : false;
 
-  function pickTrack(url: string, name: string) {
-    setTrackUrl(url);
-    setTrackName(name);
-    setRate(1);
-    setTimeout(() => {
-      const a = audioRef.current;
-      if (a) {
-        a.playbackRate = 1;
-        a.play().catch(() => undefined);
-      }
-    }, 50);
-  }
-
-  function pickRandom() {
-    if (tracksForLevel.length === 0) return;
-    const t = tracksForLevel[Math.floor(Math.random() * tracksForLevel.length)];
-    pickTrack(t.url, t.name);
-  }
-
-  function changeRate(next: number) {
-    setRate(next);
-    if (audioRef.current) audioRef.current.playbackRate = next;
+  function toggleReveal(id: string) {
+    setRevealed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   return (
-    <>
-      <section className="surface p-5 grid gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="tabs-strip" role="tablist">
-            {LEVELS.map((l) => (
-              <button
-                key={l}
-                role="tab"
-                aria-selected={level === l}
-                className={`tab${level === l ? " active" : ""}`}
-                onClick={() => setLevel(l)}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" className="btn btn-primary btn-sm" onClick={pickRandom}>
-              🎲 Rastgele kayıt
+    <section className="grid gap-6">
+      <header className="surface p-6 grid gap-3">
+        <span className="eyebrow">HÖREN · telc A1–A2</span>
+        <h1 className="h-display text-3xl">Dinleme atölyesi</h1>
+        <p className="text-sm text-[color:var(--fg-muted)] max-w-2xl">
+          {hoertexte.length} Hörtext transkripti parsedu, mp3&apos;ler eşleştirildi. Önce dinle,
+          sonra duyduğunu Almanca yeniden anlat ve AI&apos;dan kaynak metne göre geri bildirim al.
+        </p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {ALL_LEVELS.map((lv) => (
+            <button
+              key={lv}
+              type="button"
+              className={`btn btn-sm ${level === lv ? "btn-primary" : "btn-ghost"}`}
+              onClick={() => {
+                setLevel(lv);
+                setActiveId(null);
+              }}
+            >
+              {lv}
             </button>
-            {transcriptForLevel ? (
-              <a
-                className="btn btn-secondary btn-sm"
-                href={transcriptForLevel.url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Hörtext transkriptini aç ↗
-              </a>
-            ) : null}
-          </div>
+          ))}
         </div>
+      </header>
 
-        {trackUrl ? (
-          <div className="surface-muted p-3 grid gap-2">
-            <p className="eyebrow">Şu an çalan</p>
-            <p className="font-semibold text-sm">{trackName.replace(/^Auf_jeden_Fall_/, "").replace(/\.mp3$/, "")}</p>
-            <audio ref={audioRef} src={trackUrl} controls preload="metadata" className="w-full" />
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-xs text-[color:var(--fg-muted)]">Hız:</span>
-              {[0.7, 0.85, 1, 1.15].map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  className={`btn btn-sm ${rate === r ? "btn-primary" : "btn-ghost"}`}
-                  onClick={() => changeRate(r)}
-                >
-                  {r}×
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm text-[color:var(--fg-muted)]">
-            {tracksForLevel.length} kayıt bulundu. Aşağıdan birini seç ya da 🎲 ile rastgele başla.
-          </p>
-        )}
-
-        <details>
-          <summary className="cursor-pointer text-sm font-semibold">
-            Tüm {level} kayıtlarını listele ({tracksForLevel.length})
-          </summary>
-          <ul className="grid gap-1 mt-2 max-h-72 overflow-y-auto">
-            {tracksForLevel.map((t) => (
-              <li key={t.url}>
-                <button
-                  type="button"
-                  onClick={() => pickTrack(t.url, t.name)}
-                  className={`w-full text-left btn btn-sm ${trackUrl === t.url ? "btn-primary" : "btn-ghost"}`}
-                >
-                  ▶ {t.name.replace(/^Auf_jeden_Fall_/, "").replace(/\.mp3$/, "")}
-                </button>
-              </li>
-            ))}
+      <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="surface p-4 grid gap-2 self-start sticky top-4">
+          <h2 className="font-semibold text-sm">Aufgaben ({filtered.length})</h2>
+          <ul className="grid gap-1 max-h-[70vh] overflow-auto pr-1">
+            {filtered.map((h) => {
+              const tNum = trackNumberOf(h);
+              const hasAudio = findAudioUrl(h.level, tNum, audio) != null;
+              return (
+                <li key={h.id}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveId(h.id)}
+                    className={`w-full text-left text-sm p-2 rounded-lg transition ${
+                      active?.id === h.id ? "bg-[color:var(--accent-soft)] font-semibold" : "hover:bg-[color:var(--surface-soft)]"
+                    }`}
+                  >
+                    <span className="block font-mono text-xs opacity-60">
+                      L{h.lektion} · A{h.aufgabe} · {h.track} {hasAudio ? "🔊" : ""}
+                    </span>
+                    <span className="block text-xs opacity-70">{h.wordCount} kelime</span>
+                  </button>
+                </li>
+              );
+            })}
+            {filtered.length === 0 ? (
+              <li className="text-xs opacity-60">Bu seviyede Hörtext yok.</li>
+            ) : null}
           </ul>
-        </details>
-      </section>
+        </aside>
 
-      <SkillFeedbackPanel
-        skill="hoeren"
-        defaultPrompt={
-          trackName
-            ? `Az önce dinlediğin telc kaydını (${trackName}) Almanca özetle: ana fikir, kim konuşuyor, hangi bilgiler verildi.`
-            : "Dinlediğin parçayı Almanca özetle."
-        }
-        level={level.startsWith("A1") ? "A1" : "A2"}
-      />
-    </>
+        <div className="grid gap-5">
+          {active ? (
+            <article className="surface p-6 grid gap-4">
+              <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <div>
+                  <span className="eyebrow">
+                    {active.level} · Lektion {active.lektion} · Aufgabe {active.aufgabe}
+                  </span>
+                  <h2 className="h-display text-2xl mt-1">{active.track}</h2>
+                </div>
+                <a
+                  href={active.url}
+                  target="_blank"
+                  rel="noopener"
+                  className="btn btn-ghost btn-sm"
+                >
+                  Transkript PDF
+                </a>
+              </header>
+
+              {activeAudioUrl ? (
+                <audio key={active.id} controls preload="none" className="w-full">
+                  <source src={activeAudioUrl} type="audio/mpeg" />
+                </audio>
+              ) : (
+                <p className="text-xs opacity-60">
+                  Bu Aufgabe için mp3 eşleşmesi bulunamadı (sadece transkript var).
+                </p>
+              )}
+
+              <div>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => toggleReveal(active.id)}
+                >
+                  {isRevealed ? "Transkripti gizle" : "Transkripti göster"}
+                </button>
+                {isRevealed ? (
+                  <pre className="whitespace-pre-wrap text-sm leading-relaxed font-sans mt-3">{active.text}</pre>
+                ) : null}
+              </div>
+            </article>
+          ) : (
+            <p className="surface p-6 text-sm">Bu seviye için Hörtext bulunamadı.</p>
+          )}
+
+          {active ? (
+            <SkillFeedbackPanel
+              skill="hoeren"
+              level={active.level.startsWith("A1") ? "A1" : "A2"}
+              defaultPrompt={`Höre den Track ${active.track} (${active.level} Lektion ${active.lektion}, Aufgabe ${active.aufgabe}) und fasse den Inhalt auf Deutsch zusammen.`}
+              contextText={active.text}
+              contextLabel={`Hörtext ${active.level} L${active.lektion} A${active.aufgabe} (${active.track})`}
+            />
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }

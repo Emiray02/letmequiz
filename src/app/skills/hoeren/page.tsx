@@ -1,31 +1,36 @@
-import TopNav from "@/components/top-nav";
+import type { Metadata } from "next";
+import Link from "next/link";
 import HoerenWorkshop from "@/components/hoeren-workshop";
-import { getMaterialsCatalog, getHoertexteTranscripts } from "@/lib/materials-catalog";
+import { HOERTEXTE, materialsTotals } from "@/lib/materials-data";
+import { getMaterialsCatalog } from "@/lib/materials-catalog";
 
-export const metadata = { title: "Hören — Telc kayıtlarıyla dinleme atölyesi" };
-export const dynamic = "force-static";
+export const metadata: Metadata = {
+  title: "Hören · letmequiz",
+  description: "telc Hörtexte transkriptleri + mp3 eşleşmeli dinleme atölyesi.",
+};
 
 export default function HoerenPage() {
-  const cat = getMaterialsCatalog();
-  const transcripts = getHoertexteTranscripts();
-  return (
-    <>
-      <TopNav active="/skills" />
-      <main className="app-main app-container pt-8 md:pt-12 grid gap-6">
-        <header>
-          <span className="chip chip-primary">Hören · Auf jeden Fall (Telc)</span>
-          <h1 className="h-display mt-3 text-3xl md:text-4xl">Dinleme Atölyesi</h1>
-          <p className="text-sm text-[color:var(--fg-muted)] mt-2 max-w-2xl">
-            <strong>{cat.totals.audioCount} orijinal telc ses kaydı</strong> + Hörtext transkriptleri.
-            Bir tracki dinle, <strong>metne bakmadan</strong> duyduğunu yaz; AI seviyene göre düzeltsin.
-          </p>
-        </header>
+  const totals = materialsTotals();
+  const catalog = getMaterialsCatalog();
+  const audio = catalog.audio.flatMap((a) =>
+    a.files.map((f) => ({
+      level: a.level,
+      folder: a.folder,
+      folderUrl: a.url,
+      trackName: f.name,
+      url: f.url,
+    })),
+  );
 
-        <HoerenWorkshop
-          collections={cat.audio}
-          transcripts={transcripts.map((t) => ({ name: t.name, url: t.url, level: t.level }))}
-        />
-      </main>
-    </>
+  return (
+    <main className="container py-8 grid gap-6">
+      <nav className="text-xs opacity-70">
+        <Link href="/">Ana sayfa</Link> · <Link href="/skills">Beceriler</Link> · <span>Hören</span>
+      </nav>
+      <HoerenWorkshop hoertexte={HOERTEXTE} audio={audio} />
+      <p className="text-xs opacity-60 text-center">
+        {totals.hoertexte} Hörtext transkripti + {audio.length} mp3 telc materyallerinden eşleştirildi.
+      </p>
+    </main>
   );
 }

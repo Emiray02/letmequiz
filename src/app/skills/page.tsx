@@ -38,6 +38,13 @@ const skills: SkillTile[] = [
     desc: "Almanca ses klibini dinle, duyduğunu yaz (Dictogloss), AI kıyaslasın.",
     method: "Dual Coding + Testing Effect",
   },
+  {
+    href: "/wortschatz",
+    emoji: "🧠",
+    title: "Wortschatz — Kelime",
+    desc: "telc PDF'lerinden parsed 1.300+ DE↔TR kelime; SRS ile artikel & anlam çalış.",
+    method: "Spaced Repetition (SM-2)",
+  },
 ];
 
 export default function SkillsHubPage() {

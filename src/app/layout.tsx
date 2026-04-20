@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Space_Grotesk } from "next/font/google";
 import PwaRegister from "@/components/pwa-register";
-import BottomNav from "@/components/bottom-nav";
+import AppShell from "@/components/app-shell";
 import ProfileGate from "@/components/profile-gate";
 import "./globals.css";
 
@@ -10,8 +10,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f7fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0c14" },
+    { media: "(prefers-color-scheme: light)", color: "#fafafb" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0d12" },
   ],
 };
 
@@ -56,8 +56,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full">
         <PwaRegister />
         <ProfileGate>
-          <div className="app-shell">{children}</div>
-          <BottomNav />
+          <AppShell>{children}</AppShell>
         </ProfileGate>
       </body>
     </html>

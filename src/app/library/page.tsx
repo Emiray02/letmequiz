@@ -1,7 +1,7 @@
 import Link from "next/link";
 import TopNav from "@/components/top-nav";
 import HomeSetGrid from "@/components/home-set-grid";
-import { listStudySets, usingMockData } from "@/lib/data";
+import { listStudySets } from "@/lib/data";
 
 export const metadata = { title: "Kütüphane" };
 
@@ -20,11 +20,6 @@ export default async function LibraryPage() {
             <p className="mt-2 text-[color:var(--fg-muted)]">
               {sets.length} set · {totalCards} kart · CEFR seviyeleri otomatik etiketlenir.
             </p>
-            {usingMockData ? (
-              <p className="mt-2 text-sm text-[color:var(--fg-muted)] inline-flex items-center gap-2">
-                <span className="status-dot warn" /> Demo modu aktif — Supabase tanımlı değil.
-              </p>
-            ) : null}
           </div>
           <div className="flex gap-2">
             <Link href="/create" className="btn btn-primary">Yeni set</Link>

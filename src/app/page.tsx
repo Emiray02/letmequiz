@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listStudySets, usingMockData } from "@/lib/data";
+import { listStudySets } from "@/lib/data";
 import { materialsTotals } from "@/lib/materials-data";
 
 type ToolGroup = {
@@ -126,11 +126,9 @@ export default async function HomePage() {
             <Link href="/wortschatz" className="btn btn-primary btn-lg">Bugün çalışmaya başla</Link>
             <Link href="/exam" className="btn btn-secondary btn-lg">Sınav planımı kur</Link>
           </div>
-          {usingMockData ? (
-            <p className="mt-4 inline-flex items-center gap-2 text-xs text-[color:var(--fg-muted)]">
-              <span className="status-dot warn" /> Demo modu — Supabase tanımlı değil; ilerleme cihazda kalır.
-            </p>
-          ) : null}
+          <p className="mt-4 inline-flex items-center gap-2 text-xs text-[color:var(--fg-muted)]">
+            <span className="status-dot live" /> Tüm ilerleme cihazında saklanır — hesap gerekmiyor. Yedeklemek için <Link href="/data" className="underline">Veri yedekle</Link>.
+          </p>
         </div>
 
         <div className="surface p-5 md:p-6 animate-slide-up">

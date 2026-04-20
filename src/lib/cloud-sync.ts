@@ -8,10 +8,30 @@ const CHANGE_EVENT = "lmq:storage-changed";
 export type SyncPayload = Record<string, string>;
 
 export type SyncStatus =
+  | { state: "off" }
   | { state: "idle" }
   | { state: "syncing"; direction: "push" | "pull" }
   | { state: "ok"; at: number }
   | { state: "error"; message: string; at: number };
+
+let currentStatus: SyncStatus = { state: "off" };
+const statusListeners = new Set<(s: SyncStatus) => void>();
+
+export function getSyncStatus(): SyncStatus {
+  return currentStatus;
+}
+
+export function setSyncStatus(s: SyncStatus) {
+  currentStatus = s;
+  statusListeners.forEach((cb) => {
+    try { cb(s); } catch { /* noop */ }
+  });
+}
+
+export function subscribeSyncStatus(cb: (s: SyncStatus) => void): () => void {
+  statusListeners.add(cb);
+  return () => statusListeners.delete(cb);
+}
 
 function isBrowser() {
   return typeof window !== "undefined";

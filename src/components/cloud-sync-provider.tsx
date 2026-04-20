@@ -1,21 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
 import {
   detectDeviceLabel,
   pullSnapshot,
   pushSnapshot,
+  setSyncStatus,
   subscribeStorageChanged,
 } from "@/lib/cloud-sync";
 
 const PUSH_DEBOUNCE_MS = 3000;
 const PATCH_FLAG = "__lmq_storage_patched__";
 
-/**
- * Monkey-patch localStorage.setItem / removeItem once so same-tab writes also fire
- * a "lmq:storage-changed" event. Native "storage" only fires across tabs.
- */
 function ensureStoragePatched() {
   if (typeof window === "undefined") return;
   const w = window as unknown as Record<string, unknown>;
@@ -43,19 +40,8 @@ function ensureStoragePatched() {
   };
 }
 
-type Status =
-  | { state: "off" }                 // no supabase or no session
-  | { state: "idle" }
-  | { state: "syncing"; dir: "push" | "pull" }
-  | { state: "ok"; at: number }
-  | { state: "error"; msg: string };
-
-/**
- * Mounts under app-shell; runs background cloud sync when a Supabase session exists.
- * No UI by default. (AccountButton can read the same supabase session for display.)
- */
+/** Background cloud sync. Renders nothing. Status broadcast via subscribeSyncStatus. */
 export default function CloudSyncProvider() {
-  const [, setStatus] = useState<Status>({ state: "off" });
   const pushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialPullDone = useRef(false);
 
@@ -63,7 +49,7 @@ export default function CloudSyncProvider() {
     ensureStoragePatched();
     const supabase = getBrowserSupabaseClient();
     if (!supabase) {
-      setStatus({ state: "off" });
+      setSyncStatus({ state: "off" });
       return;
     }
 
@@ -73,16 +59,16 @@ export default function CloudSyncProvider() {
       const { data } = await supabase!.auth.getUser();
       if (!active) return;
       if (!data.user) {
-        setStatus({ state: "off" });
+        setSyncStatus({ state: "off" });
         return;
       }
       if (initialPullDone.current) return;
       initialPullDone.current = true;
-      setStatus({ state: "syncing", dir: "pull" });
+      setSyncStatus({ state: "syncing", direction: "pull" });
       const r = await pullSnapshot("replace");
       if (!active) return;
-      if (r.ok) setStatus({ state: "ok", at: Date.now() });
-      else setStatus({ state: "error", msg: r.error ?? "" });
+      if (r.ok) setSyncStatus({ state: "ok", at: Date.now() });
+      else setSyncStatus({ state: "error", message: r.error ?? "", at: Date.now() });
     }
 
     doInitialPullIfSignedIn();
@@ -91,19 +77,17 @@ export default function CloudSyncProvider() {
       if (!active) return;
       if (evt === "SIGNED_OUT") {
         initialPullDone.current = false;
-        setStatus({ state: "off" });
+        setSyncStatus({ state: "off" });
         return;
       }
       if (evt === "SIGNED_IN" || evt === "TOKEN_REFRESHED") {
-        // SIGNED_IN happens after the /auth page already pulled — make this a no-op to
-        // avoid wiping the local writes the auth flow may have just made.
         if (!initialPullDone.current) {
           initialPullDone.current = true;
-          setStatus({ state: "syncing", dir: "pull" });
+          setSyncStatus({ state: "syncing", direction: "pull" });
           const r = await pullSnapshot("replace");
           if (!active) return;
-          if (r.ok) setStatus({ state: "ok", at: Date.now() });
-          else setStatus({ state: "error", msg: r.error ?? "" });
+          if (r.ok) setSyncStatus({ state: "ok", at: Date.now() });
+          else setSyncStatus({ state: "error", message: r.error ?? "", at: Date.now() });
         }
       }
     });
@@ -113,11 +97,11 @@ export default function CloudSyncProvider() {
       pushTimer.current = setTimeout(async () => {
         const { data } = await supabase!.auth.getUser();
         if (!active || !data.user) return;
-        setStatus({ state: "syncing", dir: "push" });
+        setSyncStatus({ state: "syncing", direction: "push" });
         const r = await pushSnapshot({ deviceLabel: detectDeviceLabel() });
         if (!active) return;
-        if (r.ok) setStatus({ state: "ok", at: Date.now() });
-        else setStatus({ state: "error", msg: r.error ?? "" });
+        if (r.ok) setSyncStatus({ state: "ok", at: Date.now() });
+        else setSyncStatus({ state: "error", message: r.error ?? "", at: Date.now() });
       }, PUSH_DEBOUNCE_MS);
     }
 

@@ -37,6 +37,11 @@ export const metadata: Metadata = {
     "Almanca sınavına hazırlanmanın en akıllı yolu. CEFR planı, der/die/das, fiil çekimleri, diktat, dinleme, AI özet ve kişisel quizler — hepsi tek uygulamada.",
   manifest: "/manifest.webmanifest",
   applicationName: "LetMeQuiz",
+  icons: {
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    apple: [{ url: "/logo.png" }],
+    shortcut: ["/logo.png"],
+  },
   keywords: ["almanca","deutsch","telc","goethe","der die das","flashcard","AI","dil öğrenme","quiz"],
   alternates: { canonical: "https://letmequiz.vercel.app" },
   openGraph: {

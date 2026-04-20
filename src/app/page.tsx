@@ -59,6 +59,7 @@ const GROUPS: ToolGroup[] = [
       { href: "/skills/schreiben/vorlagen", title: "Schreiben şablonları", desc: "telc/Goethe için 12 hazır mektup/e-posta şablonu — boşlukları doldur.", icon: ICONS.pen },
       { href: "/skills/sprechen/rollenspiel", title: "Sprechen Rollenspiel", desc: "AI ile fırın, doktor, daire görüşmesi gibi 6 rol oyunu.", icon: ICONS.mic },
       { href: "/aussprache", title: "Aussprache (Mic)", desc: "Minimal pair çiftleri — mikrofona söyle, benzerlik puanı al.", icon: ICONS.mic },
+      { href: "/denken", title: "Almanca düşün", desc: "60 sn süre, Türkçe karakterler bloke — doğrudan Almanca üret.", icon: ICONS.spark },
     ],
   },
   {
@@ -84,6 +85,10 @@ const GROUPS: ToolGroup[] = [
       { href: "/wortfamilie",   title: "Wortfamilie",        desc: "Bir kökten türeyen kelime ailelerini AI ile keşfet.",            icon: ICONS.spark },
       { href: "/ai-workbench",  title: "AI Çalışma Tezgâhı", desc: "PDF / DOCX / not yükle: özet + flashcard + quiz tek tıkla.",     icon: ICONS.spark },
       { href: "/library",       title: "Kütüphane",          desc: "Hazır CEFR setleri ve oluşturduklarını tek panelde çalış.",      icon: ICONS.book },
+      { href: "/forgetting-curve", title: "Unutma eğrisi",      desc: "Ebbinghaus modeli ile retansiyon ve optimal tekrar takvimi.",      icon: ICONS.spark },
+      { href: "/community",     title: "Lerngemeinschaft",   desc: "Çalışma arkadaşları + topluluk meydan okumaları.",                icon: ICONS.spark },
+      { href: "/data",          title: "Veri yedekle",       desc: "Tüm yerel veriyi JSON olarak indir/yükle — cihaz değiştir.",        icon: ICONS.folder },
+      { href: "/shortcuts",     title: "Klavye kısayolları",  desc: "G + harf ile her sayfaya hızlı geçiş. ? ile bu listeyi aç.",     icon: ICONS.spark },
     ],
   },
 ];

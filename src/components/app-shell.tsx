@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ProfileMenu from "./profile-menu";
 
@@ -50,6 +50,7 @@ const SECTIONS: Section[] = [
       { href: "/", label: "Ana sayfa", icon: I.home },
       { href: "/tagesziel", label: "Bugünün hedefi", icon: I.target },
       { href: "/woche", label: "Haftalık özet", icon: I.chart },
+      { href: "/community", label: "Lerngemeinschaft", icon: I.kids },
     ],
   },
   {
@@ -73,6 +74,7 @@ const SECTIONS: Section[] = [
       { href: "/skills/sprechen", label: "Sprechen — Konuşma", icon: I.mic },
       { href: "/skills/sprechen/rollenspiel", label: "↳ Rollenspiel (AI)", icon: I.mic },
       { href: "/aussprache", label: "Aussprache (Mic)", icon: I.mic },
+      { href: "/denken", label: "Almanca düşün", icon: I.spark },
     ],
   },
   {
@@ -82,6 +84,7 @@ const SECTIONS: Section[] = [
       { href: "/grammar/konjugator", label: "↳ Konjugator", icon: I.rotate },
       { href: "/grammar/doctor", label: "↳ Cümle doktoru", icon: I.spark },
       { href: "/wortfamilie", label: "Wortfamilie", icon: I.layers },
+      { href: "/forgetting-curve", label: "Unutma eğrisi", icon: I.chart },
       { href: "/fehlerheft", label: "Hata defterim", icon: I.book },
     ],
   },
@@ -103,6 +106,8 @@ const SECTIONS: Section[] = [
       { href: "/analytics", label: "İstatistikler", icon: I.chart },
       { href: "/classroom", label: "Sınıf modu", icon: I.classroom },
       { href: "/parent", label: "Veli paneli", icon: I.kids },
+      { href: "/data", label: "Veri yedek / içe aktar", icon: I.folder },
+      { href: "/shortcuts", label: "Klavye kısayolları", icon: I.spark },
     ],
   },
 ];
@@ -123,6 +128,7 @@ function isPathActive(pathname: string, href: string): boolean {
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "/";
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -132,6 +138,41 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  // Global keyboard shortcuts: press G then a letter
+  useEffect(() => {
+    const map: Record<string, string> = {
+      h: "/", t: "/tagesziel", w: "/wortschatz", l: "/skills/lesen", o: "/skills/hoeren",
+      s: "/skills/schreiben", k: "/skills/sprechen", g: "/grammar", f: "/fehlerheft",
+      c: "/cloze", n: "/news", d: "/denken", e: "/exam", a: "/ai-workbench",
+    };
+    let waiting = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    function isFormElement(el: EventTarget | null): boolean {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable;
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isFormElement(e.target)) return;
+      if (e.key === "?") { e.preventDefault(); router.push("/shortcuts"); return; }
+      if (!waiting && e.key.toLowerCase() === "g") {
+        waiting = true;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => { waiting = false; }, 1200);
+        return;
+      }
+      if (waiting) {
+        const dest = map[e.key.toLowerCase()];
+        waiting = false;
+        if (timer) clearTimeout(timer);
+        if (dest) { e.preventDefault(); router.push(dest); }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [router]);
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
@@ -146,7 +187,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Desktop sidebar */}
       <aside className="sidebar" aria-label="Birincil gezinme">
         <Link href="/" className="sidebar-brand">
-          <span className="brand-mark">Lq</span>
+          <span className="brand-mark" aria-hidden />
           <span>LetMeQuiz</span>
         </Link>
         {SECTIONS.map((sec) => (
@@ -184,7 +225,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </svg>
           </button>
           <Link href="/" className="topbar-brand">
-            <span className="brand-mark">Lq</span>
+            <span className="brand-mark" aria-hidden />
             <span>LetMeQuiz</span>
           </Link>
           <ProfileMenu />
@@ -204,7 +245,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <aside className={`drawer${drawerOpen ? " open" : ""}`} aria-label="Mobil menü">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
           <Link href="/" className="sidebar-brand" style={{ marginBottom: 0 }}>
-            <span className="brand-mark">Lq</span>
+            <span className="brand-mark" aria-hidden />
             <span>LetMeQuiz</span>
           </Link>
           <button

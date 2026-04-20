@@ -1,5 +1,6 @@
 "use client";
 
+import RoleGuard from "@/components/role-guard";
 import { useEffect, useMemo, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
 import {
@@ -24,6 +25,14 @@ function fmtDate(iso: string | null): string {
 }
 
 export default function StudentDashboardPage() {
+  return (
+    <RoleGuard required="student">
+      <StudentDashboardInner />
+    </RoleGuard>
+  );
+}
+
+function StudentDashboardInner() {
   const [auth, setAuth] = useState<AuthState>({ state: "loading" });
   const [displayName, setDisplayName] = useState("");
   const [savingName, setSavingName] = useState(false);

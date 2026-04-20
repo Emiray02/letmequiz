@@ -22,8 +22,10 @@ import {
   listProfiles,
   setActiveProfile,
 } from "@/lib/profile-store";
+import { upsertMyProfile } from "@/lib/teacher-store";
 
 type Mode = "signin" | "signup";
+type Role = "student" | "teacher";
 type AuthState = "loading" | "anon" | "ready";
 
 function ensureLocalProfile(email: string | null) {
@@ -77,6 +79,8 @@ export default function ProfileGate({ children }: { children: React.ReactNode })
 
 function AuthScreen() {
   const [mode, setMode] = useState<Mode>("signin");
+  const [role, setRole] = useState<Role>("student");
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -94,19 +98,32 @@ function AuthScreen() {
     setMsg(null);
     try {
       if (mode === "signup") {
+        if (!displayName.trim()) {
+          setMsg({ kind: "error", text: "Lütfen görünen ismini gir." });
+          setBusy(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({ email: email.trim(), password });
         if (error) throw error;
         const { data: sess } = await supabase.auth.getSession();
         if (!sess.session) {
+          // Email verification flow: stash the chosen role + name so we can
+          // upsert it on first sign-in.
+          try {
+            window.localStorage.setItem("letmequiz.signup.pending", JSON.stringify({ role, displayName: displayName.trim() }));
+          } catch { /* ignore */ }
           setMsg({
             kind: "info",
             text: "✉️ Kayıt oluşturuldu. E-postandaki doğrulama bağlantısına tıkla, sonra giriş yap.",
           });
           setMode("signin");
         } else {
+          // Persist role + name to user_profiles BEFORE first reload so the
+          // role guard sees it.
+          try { await upsertMyProfile({ display_name: displayName.trim(), role }); } catch { /* table missing? ignore */ }
           ensureLocalProfile(email.trim());
           await pushSnapshot({ deviceLabel: detectDeviceLabel() });
-          setMsg({ kind: "ok", text: "Hesap açıldı." });
+          setMsg({ kind: "ok", text: role === "teacher" ? "Öğretmen hesabı açıldı." : "Öğrenci hesabı açıldı." });
           setTimeout(() => { window.location.reload(); }, 600);
         }
       } else {
@@ -114,6 +131,18 @@ function AuthScreen() {
         if (error) throw error;
         const { data: who } = await supabase.auth.getUser();
         const userEmailNow = who.user?.email ?? email.trim();
+        // If the user just confirmed email after sign-up, apply pending role/name.
+        try {
+          const raw = window.localStorage.getItem("letmequiz.signup.pending");
+          if (raw) {
+            const pending = JSON.parse(raw) as { role?: Role; displayName?: string };
+            await upsertMyProfile({
+              display_name: pending.displayName || (userEmailNow.split("@")[0] ?? "Ben"),
+              role: pending.role === "teacher" ? "teacher" : "student",
+            });
+            window.localStorage.removeItem("letmequiz.signup.pending");
+          }
+        } catch { /* ignore */ }
         const res = await pullSnapshot("replace");
         if (!res.ok) {
           setMsg({ kind: "error", text: `Giriş yapıldı ama veri çekilemedi: ${res.error}` });
@@ -236,6 +265,50 @@ function AuthScreen() {
         </div>
 
         <form onSubmit={submit}>
+          {mode === "signup" && (
+            <>
+              <div className="lmq-auth-field">
+                <span className="lmq-auth-label">Hesap türü</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <button type="button"
+                    onClick={() => setRole("student")}
+                    style={{
+                      padding: "0.7rem 0.6rem", borderRadius: 10,
+                      border: role === "student" ? "2px solid #6366f1" : "1px solid var(--border, rgba(0,0,0,0.12))",
+                      background: role === "student" ? "rgba(99,102,241,0.08)" : "var(--surface, #fff)",
+                      cursor: "pointer", fontWeight: 600, textAlign: "left",
+                    }}>
+                    🎓 Öğrenci
+                    <div style={{ fontSize: ".75rem", fontWeight: 400, color: "var(--fg-muted, #64748b)", marginTop: 2 }}>
+                      Öğretmenden ders ve ödev al.
+                    </div>
+                  </button>
+                  <button type="button"
+                    onClick={() => setRole("teacher")}
+                    style={{
+                      padding: "0.7rem 0.6rem", borderRadius: 10,
+                      border: role === "teacher" ? "2px solid #6366f1" : "1px solid var(--border, rgba(0,0,0,0.12))",
+                      background: role === "teacher" ? "rgba(99,102,241,0.08)" : "var(--surface, #fff)",
+                      cursor: "pointer", fontWeight: 600, textAlign: "left",
+                    }}>
+                    🧑‍🏫 Öğretmen
+                    <div style={{ fontSize: ".75rem", fontWeight: 400, color: "var(--fg-muted, #64748b)", marginTop: 2 }}>
+                      Öğrencileri yönet, plan ve ödev ata.
+                    </div>
+                  </button>
+                </div>
+              </div>
+              <div className="lmq-auth-field">
+                <label className="lmq-auth-label" htmlFor="lmq-name">Görünen isim</label>
+                <input
+                  id="lmq-name" type="text" className="lmq-auth-input"
+                  value={displayName} onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder={role === "teacher" ? "Ad Soyad (ör. Ayşe Öğretmen)" : "Adın"}
+                  required maxLength={48}
+                />
+              </div>
+            </>
+          )}
           <div className="lmq-auth-field">
             <label className="lmq-auth-label" htmlFor="lmq-email">E-posta</label>
             <input

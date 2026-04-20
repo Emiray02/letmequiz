@@ -278,3 +278,133 @@ create policy "assignments update student status" on public.assignments
 
 create policy "assignments delete teacher" on public.assignments
   for delete to authenticated using (auth.uid() = teacher_user_id);
+
+-- ============================================================
+-- 6) telc Exam Plans (teacher → student)
+-- ============================================================
+-- Teacher fixes a target exam (level + date). The client builds the
+-- per-day plan deterministically from this row + the local progress log.
+
+create table if not exists public.exam_plans (
+  id              uuid primary key default gen_random_uuid(),
+  teacher_user_id uuid not null references auth.users(id) on delete cascade,
+  student_user_id uuid not null references auth.users(id) on delete cascade,
+  level           text not null check (level in ('A1','A2','B1','B2','C1')),
+  exam_date       date not null,
+  daily_minutes   int  not null default 60 check (daily_minutes between 15 and 240),
+  notes           text,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+  unique (teacher_user_id, student_user_id)
+);
+
+create index if not exists idx_exam_plans_student on public.exam_plans(student_user_id);
+
+alter table public.exam_plans enable row level security;
+
+drop policy if exists "exam_plans select participants"   on public.exam_plans;
+drop policy if exists "exam_plans insert as teacher"     on public.exam_plans;
+drop policy if exists "exam_plans update teacher"        on public.exam_plans;
+drop policy if exists "exam_plans delete teacher"        on public.exam_plans;
+
+create policy "exam_plans select participants" on public.exam_plans
+  for select to authenticated using (
+    auth.uid() = teacher_user_id or auth.uid() = student_user_id
+  );
+
+create policy "exam_plans insert as teacher" on public.exam_plans
+  for insert to authenticated with check (
+    auth.uid() = teacher_user_id
+    and exists (
+      select 1 from public.teacher_links tl
+      where tl.teacher_user_id = auth.uid()
+        and tl.student_user_id = exam_plans.student_user_id
+    )
+  );
+
+create policy "exam_plans update teacher" on public.exam_plans
+  for update to authenticated using (auth.uid() = teacher_user_id)
+  with check (auth.uid() = teacher_user_id);
+
+create policy "exam_plans delete teacher" on public.exam_plans
+  for delete to authenticated using (auth.uid() = teacher_user_id);
+
+-- Auto-bump updated_at.
+create or replace function public.touch_exam_plan()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_touch_exam_plan on public.exam_plans;
+create trigger trg_touch_exam_plan
+  before update on public.exam_plans
+  for each row execute function public.touch_exam_plan();
+
+-- ============================================================
+-- 7) Plan day progress (student check-offs the daily mode writes)
+-- ============================================================
+-- Every "today's task" is identified by (plan_id, day_index, item_id).
+-- This lets the daily-mode page mark items done and the planner carry
+-- unfinished items forward.
+
+create table if not exists public.exam_plan_progress (
+  plan_id      uuid not null references public.exam_plans(id) on delete cascade,
+  day_index    int  not null,
+  item_id      text not null,
+  status       text not null default 'done' check (status in ('done','skipped','weak')),
+  score        int,           -- 0..100, optional
+  recorded_at  timestamptz not null default now(),
+  primary key (plan_id, day_index, item_id)
+);
+
+create index if not exists idx_exam_plan_progress_plan on public.exam_plan_progress(plan_id);
+
+alter table public.exam_plan_progress enable row level security;
+
+drop policy if exists "plan_progress select participants" on public.exam_plan_progress;
+drop policy if exists "plan_progress write student"       on public.exam_plan_progress;
+
+create policy "plan_progress select participants" on public.exam_plan_progress
+  for select to authenticated using (
+    exists (
+      select 1 from public.exam_plans p
+      where p.id = exam_plan_progress.plan_id
+        and (p.student_user_id = auth.uid() or p.teacher_user_id = auth.uid())
+    )
+  );
+
+create policy "plan_progress write student" on public.exam_plan_progress
+  for insert to authenticated with check (
+    exists (
+      select 1 from public.exam_plans p
+      where p.id = exam_plan_progress.plan_id
+        and p.student_user_id = auth.uid()
+    )
+  );
+
+create policy "plan_progress update student" on public.exam_plan_progress
+  for update to authenticated using (
+    exists (
+      select 1 from public.exam_plans p
+      where p.id = exam_plan_progress.plan_id
+        and p.student_user_id = auth.uid()
+    )
+  ) with check (
+    exists (
+      select 1 from public.exam_plans p
+      where p.id = exam_plan_progress.plan_id
+        and p.student_user_id = auth.uid()
+    )
+  );
+
+create policy "plan_progress delete student" on public.exam_plan_progress
+  for delete to authenticated using (
+    exists (
+      select 1 from public.exam_plans p
+      where p.id = exam_plan_progress.plan_id
+        and p.student_user_id = auth.uid()
+    )
+  );

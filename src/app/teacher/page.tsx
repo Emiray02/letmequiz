@@ -2,6 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
+import RoleGuard from "@/components/role-guard";
+import {
+  upsertExamPlanForStudent,
+  listCloudExamPlansForTeacher,
+  deleteCloudExamPlan,
+  type CloudExamPlan,
+} from "@/lib/cloud-exam-plan";
+import type { CefrLevel } from "@/lib/exam-plan";
 import {
   createAssignment,
   createInviteCode,
@@ -74,6 +82,14 @@ function deriveMetrics(payload: Record<string, string>): { label: string; value:
 }
 
 export default function TeacherDashboardPage() {
+  return (
+    <RoleGuard required="teacher">
+      <TeacherDashboardInner />
+    </RoleGuard>
+  );
+}
+
+function TeacherDashboardInner() {
   const [auth, setAuth] = useState<AuthState>({ state: "loading" });
   const [displayName, setDisplayName] = useState("");
   const [savingName, setSavingName] = useState(false);
@@ -90,6 +106,14 @@ export default function TeacherDashboardPage() {
   const [aTitle, setATitle] = useState("");
   const [aDesc, setADesc] = useState("");
   const [aDue, setADue] = useState("");
+
+  // Exam-plan form state
+  const [examPlans, setExamPlans] = useState<CloudExamPlan[]>([]);
+  const [pStudent, setPStudent] = useState("");
+  const [pLevel, setPLevel] = useState<CefrLevel>("A2");
+  const [pDate, setPDate] = useState("");
+  const [pMinutes, setPMinutes] = useState(60);
+  const [pNotes, setPNotes] = useState("");
 
   useEffect(() => {
     const c = getBrowserSupabaseClient();
@@ -112,15 +136,18 @@ export default function TeacherDashboardPage() {
     setErr(null);
     try {
       await upsertMyProfile({ role: "teacher" });
-      const [c1, c2, c3] = await Promise.all([
+      const [c1, c2, c3, c4] = await Promise.all([
         listMyInviteCodes(),
         listMyStudents(),
         listAssignmentsForTeacher(),
+        listCloudExamPlansForTeacher(),
       ]);
       setCodes(c1);
       setStudents(c2);
       setAssignments(c3);
+      setExamPlans(c4);
       if (!aStudent && c2.length > 0) setAStudent(c2[0].student_user_id);
+      if (!pStudent && c2.length > 0) setPStudent(c2[0].student_user_id);
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -342,6 +369,95 @@ export default function TeacherDashboardPage() {
               ))}
             </div>
           </div>
+        )}
+      </section>
+
+      <section className="surface mt-6 p-6">
+        <h2 className="text-xl font-semibold">telc planı</h2>
+        <p className="mt-1 text-sm text-[color:var(--fg-muted)]">
+          Öğrencinin seviyesini ve sınav tarihini gir. Sistem her günün ne çalışması gerektiğini
+          otomatik olarak hazırlar (her 7. gün tekrar, her 2 haftada bir mock prüfung).
+        </p>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (!pStudent || !pDate) { setErr("Öğrenci ve tarih zorunlu."); return; }
+          try {
+            await upsertExamPlanForStudent({
+              student_user_id: pStudent,
+              level: pLevel,
+              exam_date: pDate,
+              daily_minutes: Math.max(15, Math.min(240, pMinutes)),
+              notes: pNotes.trim() || undefined,
+            });
+            setOkMsg("Plan kaydedildi. Öğrenci /heute sayfasından başlayabilir.");
+            setPNotes("");
+            await refresh();
+          } catch (ex) { setErr(ex instanceof Error ? ex.message : String(ex)); }
+        }} className="mt-4 grid gap-3">
+          <label className="grid gap-1">
+            <span className="text-sm font-medium">Öğrenci</span>
+            <select className="input" value={pStudent} onChange={(e) => setPStudent(e.target.value)} disabled={students.length === 0}>
+              {students.length === 0 && <option value="">— Önce öğrenci ekle —</option>}
+              {students.map((s) => (
+                <option key={s.student_user_id} value={s.student_user_id}>
+                  {s.display_name ?? `Öğrenci ${s.student_user_id.slice(0, 6)}`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="grid gap-1">
+              <span className="text-sm font-medium">Seviye</span>
+              <select className="input" value={pLevel} onChange={(e) => setPLevel(e.target.value as CefrLevel)}>
+                <option value="A1">telc A1</option>
+                <option value="A2">telc A2</option>
+                <option value="B1">telc B1</option>
+                <option value="B2">telc B2</option>
+              </select>
+            </label>
+            <label className="grid gap-1">
+              <span className="text-sm font-medium">Sınav tarihi</span>
+              <input className="input" type="date" value={pDate} onChange={(e) => setPDate(e.target.value)} required />
+            </label>
+            <label className="grid gap-1">
+              <span className="text-sm font-medium">Günlük dakika</span>
+              <input className="input" type="number" min={15} max={240} value={pMinutes}
+                onChange={(e) => setPMinutes(Number(e.target.value))} />
+            </label>
+          </div>
+          <label className="grid gap-1">
+            <span className="text-sm font-medium">Not (opsiyonel)</span>
+            <textarea className="input" value={pNotes} onChange={(e) => setPNotes(e.target.value)} rows={2}
+              placeholder="ör. Schreiben'e özellikle çalışalım." />
+          </label>
+          <div>
+            <button className="btn btn-primary" type="submit" disabled={students.length === 0}>Planı kaydet</button>
+          </div>
+        </form>
+
+        {examPlans.length > 0 && (
+          <ul className="mt-6 grid gap-2">
+            {examPlans.map((p) => (
+              <li key={p.id} className="rounded-md border border-[color:var(--border)] p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-semibold">
+                      {studentName(p.student_user_id)} · telc {p.level}
+                    </div>
+                    <div className="text-xs text-[color:var(--fg-muted)]">
+                      Sınav: {p.exam_date} · {p.daily_minutes} dk/gün · güncellendi: {fmtDate(p.updated_at)}
+                    </div>
+                    {p.notes && <div className="text-xs mt-1">{p.notes}</div>}
+                  </div>
+                  <button className="btn btn-ghost btn-sm" onClick={async () => {
+                    if (!confirm("Planı silmek istediğine emin misin?")) return;
+                    try { await deleteCloudExamPlan(p.id); await refresh(); }
+                    catch (ex) { setErr(ex instanceof Error ? ex.message : String(ex)); }
+                  }}>Sil</button>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

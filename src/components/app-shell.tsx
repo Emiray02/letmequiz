@@ -50,6 +50,7 @@ const SECTIONS: Section[] = [
     title: "Genel",
     items: [
       { href: "/", label: "Ana sayfa", icon: I.home },
+      { href: "/heute", label: "Bugün çalış (telc planı)", icon: I.target },
       { href: "/tagesziel", label: "Bugünün hedefi", icon: I.target },
       { href: "/woche", label: "Haftalık özet", icon: I.chart },
       { href: "/community", label: "Lerngemeinschaft", icon: I.kids },

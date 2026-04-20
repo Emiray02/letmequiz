@@ -6,7 +6,6 @@ import type { ProfileRole } from "@/lib/profile-store";
 
 const LABELS: Record<ProfileRole, string> = {
   student: "Öğrenci",
-  parent: "Veli",
   teacher: "Öğretmen",
 };
 

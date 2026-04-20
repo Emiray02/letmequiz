@@ -50,11 +50,7 @@ export default function ProfileMenu() {
             </p>
             <p className="font-semibold mt-0.5">{profile.name}</p>
             <p className="text-xs text-[color:var(--fg-muted)]">
-              {profile.role === "student"
-                ? "Öğrenci"
-                : profile.role === "parent"
-                  ? "Veli"
-                  : "Öğretmen"}
+              {profile.role === "student" ? "Öğrenci" : "Öğretmen"}
               {profile.goal ? ` · ${profile.goal}` : ""}
             </p>
           </div>
@@ -81,11 +77,7 @@ export default function ProfileMenu() {
                         <span className="grid text-left">
                           <span className="font-medium">{p.name}</span>
                           <span className="text-[10px] text-[color:var(--fg-muted)]">
-                            {p.role === "student"
-                              ? "Öğrenci"
-                              : p.role === "parent"
-                                ? "Veli"
-                                : "Öğretmen"}
+                            {p.role === "student" ? "Öğrenci" : "Öğretmen"}
                           </span>
                         </span>
                       </button>

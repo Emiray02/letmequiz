@@ -2,11 +2,16 @@
 
 /**
  * Lightweight profile system stored in localStorage.
- * Allows multiple users (student / parent / teacher) to share the same device,
+ * Allows multiple users (student / teacher) to share the same device,
  * each with their own scoped progress data.
+ * Legacy "parent" role is auto-migrated to "teacher" on read.
  */
 
-export type ProfileRole = "student" | "parent" | "teacher";
+export type ProfileRole = "student" | "teacher";
+
+function normalizeRole(r: string | undefined): ProfileRole {
+  return r === "teacher" ? "teacher" : r === "parent" ? "teacher" : "student";
+}
 
 export type Profile = {
   id: string;
@@ -47,7 +52,10 @@ function safeWrite<T>(key: string, value: T) {
 }
 
 export function listProfiles(): Profile[] {
-  return safeRead<Profile[]>(PROFILES_KEY, []);
+  return safeRead<Profile[]>(PROFILES_KEY, []).map((p) => ({
+    ...p,
+    role: normalizeRole((p as unknown as { role?: string }).role),
+  }));
 }
 
 export function getActiveProfileId(): string | null {
@@ -106,7 +114,6 @@ export type CreateProfileInput = {
 
 const DEFAULT_AVATARS: Record<ProfileRole, string> = {
   student: "🎓",
-  parent: "👨‍👩‍👧",
   teacher: "🧑‍🏫",
 };
 

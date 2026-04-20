@@ -15,19 +15,14 @@ const ROLE_LABELS: Record<ProfileRole, { title: string; subtitle: string; emoji:
     subtitle: "Almanca öğreniyorum / sınava hazırlanıyorum",
     emoji: "🎓",
   },
-  parent: {
-    title: "Veli",
-    subtitle: "Çocuğumun ilerlemesini takip etmek istiyorum",
-    emoji: "👨‍👩‍👧",
-  },
   teacher: {
     title: "Öğretmen",
-    subtitle: "Sınıfımı ve ödevleri yönetiyorum",
+    subtitle: "Öğrencilerime ödev veriyor, gelişimlerini izliyorum",
     emoji: "🧑‍🏫",
   },
 };
 
-const ROLE_KEYS: ProfileRole[] = ["student", "parent", "teacher"];
+const ROLE_KEYS: ProfileRole[] = ["student", "teacher"];
 
 const AVATARS = ["🎓", "👨‍👩‍👧", "🧑‍🏫", "🦊", "🐼", "🐯", "🦄", "🚀", "⭐", "🇩🇪", "📚", "🧠"];
 

@@ -10,6 +10,7 @@ import {
   type CloudExamPlan,
 } from "@/lib/cloud-exam-plan";
 import type { CefrLevel } from "@/lib/exam-plan";
+import { suggestDailyMinutes, todayISO, daysBetween } from "@/lib/exam-plan";
 import {
   createAssignment,
   createInviteCode,
@@ -113,7 +114,18 @@ function TeacherDashboardInner() {
   const [pLevel, setPLevel] = useState<CefrLevel>("A2");
   const [pDate, setPDate] = useState("");
   const [pMinutes, setPMinutes] = useState(60);
+  const [pAuto, setPAuto] = useState(true);
   const [pNotes, setPNotes] = useState("");
+
+  // When auto is on, recompute minutes from level + date.
+  const autoMinutes = useMemo(() => {
+    if (!pDate) return null;
+    try { return suggestDailyMinutes({ level: pLevel, examDate: pDate, startDate: todayISO() }); }
+    catch { return null; }
+  }, [pLevel, pDate]);
+  useEffect(() => {
+    if (pAuto && autoMinutes != null) setPMinutes(autoMinutes);
+  }, [pAuto, autoMinutes]);
 
   useEffect(() => {
     const c = getBrowserSupabaseClient();
@@ -422,9 +434,23 @@ function TeacherDashboardInner() {
             <label className="grid gap-1">
               <span className="text-sm font-medium">Günlük dakika</span>
               <input className="input" type="number" min={15} max={240} value={pMinutes}
+                disabled={pAuto}
                 onChange={(e) => setPMinutes(Number(e.target.value))} />
             </label>
           </div>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" checked={pAuto} onChange={(e) => setPAuto(e.target.checked)} style={{ marginTop: 3 }} />
+            <span>
+              <strong>Sistem otomatik hesaplasın.</strong>{" "}
+              Sistem tüm konuları sayar, tekrar/mock günlerini düşer ve sınava kadar her gün kaç dakika çalışılması gerektiğini bulur.
+              {pAuto && autoMinutes != null && (
+                <span className="block mt-1 text-[color:var(--fg-muted)]">
+                  Öneri: <strong>{autoMinutes} dk/gün</strong>
+                  {" · "}{Math.max(0, daysBetween(todayISO(), pDate || todayISO()))} gün kaldı.
+                </span>
+              )}
+            </span>
+          </label>
           <label className="grid gap-1">
             <span className="text-sm font-medium">Not (opsiyonel)</span>
             <textarea className="input" value={pNotes} onChange={(e) => setPNotes(e.target.value)} rows={2}

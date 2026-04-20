@@ -353,3 +353,34 @@ export function todayIndex(input: ExamPlanInput): number {
   const start = input.startDate ?? todayISO();
   return Math.max(0, daysBetween(start, todayISO()));
 }
+
+/**
+ * Suggest a daily-minutes value so that ALL catalog items for `level` finish
+ * before `examDate` (with `startDate` defaulting to today). Accounts for the
+ * fact that ~1/7 days are review days and ~1/14 days are mocks (so they don't
+ * eat into the new-content budget). Clamped to [15, 240].
+ *
+ * Formula:
+ *   totalMinutes = sum(catalog item.minutes) + 15% buffer
+ *   studyDays    = max(1, daysUntilExam − reviewDays − mockDays)
+ *   perDay       = ceil(totalMinutes / studyDays / 5) * 5   // round to 5 dk
+ */
+export function suggestDailyMinutes(args: {
+  level: CefrLevel;
+  examDate: string;
+  startDate?: string;
+}): number {
+  const start = args.startDate ?? todayISO();
+  const totalDays = Math.max(1, daysBetween(start, args.examDate));
+  if (totalDays <= 1) return 240;
+
+  const reviewDays = Math.floor(totalDays / 7);
+  const mockDays   = Math.floor(totalDays / 14);
+  const studyDays  = Math.max(1, totalDays - reviewDays - mockDays);
+
+  const catalog = buildCatalog(args.level);
+  const totalMinutes = Math.round(catalog.reduce((s, c) => s + c.minutes, 0) * 1.15);
+
+  const perDay = Math.ceil(totalMinutes / studyDays / 5) * 5;
+  return Math.max(15, Math.min(240, perDay));
+}

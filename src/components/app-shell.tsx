@@ -48,6 +48,8 @@ const SECTIONS: Section[] = [
     title: "Genel",
     items: [
       { href: "/", label: "Ana sayfa", icon: I.home },
+      { href: "/tagesziel", label: "Bugünün hedefi", icon: I.target },
+      { href: "/woche", label: "Haftalık özet", icon: I.chart },
     ],
   },
   {
@@ -58,6 +60,7 @@ const SECTIONS: Section[] = [
       { href: "/deutsch/verben", label: "Fiil çekim", icon: I.rotate },
       { href: "/deutsch/diktat", label: "Diktat", icon: I.ear },
       { href: "/deutsch/saetze", label: "Cümle kur", icon: I.blocks },
+      { href: "/cloze", label: "C-Test (Cloze)", icon: I.read },
     ],
   },
   {
@@ -66,15 +69,30 @@ const SECTIONS: Section[] = [
       { href: "/skills/lesen", label: "Lesen — Okuma", icon: I.read },
       { href: "/skills/hoeren", label: "Hören — Dinleme", icon: I.ear },
       { href: "/skills/schreiben", label: "Schreiben — Yazma", icon: I.pen },
+      { href: "/skills/schreiben/vorlagen", label: "↳ Şablonlar", icon: I.pen },
       { href: "/skills/sprechen", label: "Sprechen — Konuşma", icon: I.mic },
+      { href: "/skills/sprechen/rollenspiel", label: "↳ Rollenspiel (AI)", icon: I.mic },
+      { href: "/aussprache", label: "Aussprache (Mic)", icon: I.mic },
+    ],
+  },
+  {
+    title: "Gramer & Kelime",
+    items: [
+      { href: "/grammar", label: "Gramer atölyesi", icon: I.spark },
+      { href: "/grammar/konjugator", label: "↳ Konjugator", icon: I.rotate },
+      { href: "/grammar/doctor", label: "↳ Cümle doktoru", icon: I.spark },
+      { href: "/wortfamilie", label: "Wortfamilie", icon: I.layers },
+      { href: "/fehlerheft", label: "Hata defterim", icon: I.book },
     ],
   },
   {
     title: "Sınava hazırlık",
     items: [
       { href: "/exam", label: "Sınav planım", icon: I.target },
+      { href: "/seviye", label: "Seviye testi", icon: I.target },
       { href: "/materials", label: "telc materyalleri", icon: I.folder },
       { href: "/clips", label: "Sitcom klipler", icon: I.film },
+      { href: "/news", label: "Almanca haberler", icon: I.read },
     ],
   },
   {
@@ -92,10 +110,10 @@ const SECTIONS: Section[] = [
 /** Mobile bottom nav — 5 most-used destinations only. */
 const BOTTOM: NavItem[] = [
   { href: "/", label: "Ana", icon: I.home },
+  { href: "/tagesziel", label: "Bugün", icon: I.target },
   { href: "/wortschatz", label: "Kelime", icon: I.brain },
   { href: "/skills", label: "Beceri", icon: I.layers },
-  { href: "/exam", label: "Sınav", icon: I.target },
-  { href: "/materials", label: "telc", icon: I.folder },
+  { href: "/fehlerheft", label: "Hatalar", icon: I.book },
 ];
 
 function isPathActive(pathname: string, href: string): boolean {

@@ -38,11 +38,13 @@ const GROUPS: ToolGroup[] = [
     title: "Günlük çalışma",
     hint: "Her gün 15 dakika — kalıcı öğrenme için kısa, sık tekrarlar.",
     items: [
+      { href: "/tagesziel", title: "Bugünün hedefi", desc: "3 günlük görev + streak — günde 15 dk’lık tutarlı plan.", icon: ICONS.target },
       { href: "/wortschatz", title: "Wortschatz (SRS)", desc: "1.300+ DE↔TR kelime, aralıklı tekrar quizleri, artikel tahmini.", icon: ICONS.brain },
       { href: "/deutsch/artikel", title: "der · die · das", desc: "60+ A1/A2 isimle artikel hafızası ve faustregeln.", icon: ICONS.letters },
       { href: "/deutsch/verben", title: "Fiil çekim (Präsens)", desc: "Modal, yardımcı, düzenli, düzensiz — yazarak öğren.", icon: ICONS.rotate },
       { href: "/deutsch/diktat", title: "Diktat", desc: "Almanca sesle dinle, yaz, kelime kelime kontrol et.", icon: ICONS.ear },
       { href: "/deutsch/saetze", title: "Cümle kur", desc: "Karışık parçalardan doğru sıralı cümle — V2 mantığı.", icon: ICONS.blocks },
+      { href: "/cloze", title: "C-Test (Cloze)", desc: "telc Lesetextlerinden otomatik üretilen kelime tamamlama testi.", icon: ICONS.read },
     ],
   },
   {
@@ -54,6 +56,9 @@ const GROUPS: ToolGroup[] = [
       { href: "/skills/hoeren",    title: "Hören — Dinleme",     desc: "151 Hörtext + mp3 eşleşmesi; dictogloss ile yeniden anlat.",          icon: ICONS.ear },
       { href: "/skills/schreiben", title: "Schreiben — Yazma",   desc: "E-posta, forum cevabı yaz; AI hatalarını TR açıklamayla düzeltsin.",   icon: ICONS.pen },
       { href: "/skills/sprechen",  title: "Sprechen — Konuşma",  desc: "Sesli cevap ver, transkribe et, telaffuz ve akıcılık için geri bildirim al.", icon: ICONS.mic },
+      { href: "/skills/schreiben/vorlagen", title: "Schreiben şablonları", desc: "telc/Goethe için 12 hazır mektup/e-posta şablonu — boşlukları doldur.", icon: ICONS.pen },
+      { href: "/skills/sprechen/rollenspiel", title: "Sprechen Rollenspiel", desc: "AI ile fırın, doktor, daire görüşmesi gibi 6 rol oyunu.", icon: ICONS.mic },
+      { href: "/aussprache", title: "Aussprache (Mic)", desc: "Minimal pair çiftleri — mikrofona söyle, benzerlik puanı al.", icon: ICONS.mic },
     ],
   },
   {
@@ -62,8 +67,10 @@ const GROUPS: ToolGroup[] = [
     hint: "telc · Goethe · ÖSD · TestDaF · DSH · YDS — sınav tarihine göre dinamik plan.",
     items: [
       { href: "/exam",      title: "Sınav planım",       desc: "Sınav tarihi + kurum gir, dinamik haftalık plan otomatik gelsin.",   icon: ICONS.target },
+      { href: "/seviye",    title: "Seviye testi",       desc: "CEFR yerleştirme: 15 sorulukla A1–B2 arası seviyeni belirle.",      icon: ICONS.target },
       { href: "/materials", title: "telc materyalleri",  desc: "Einfach gut + Auf jeden Fall: 41 PDF + 299 mp3 — tek panelden eriş.", icon: ICONS.folder },
       { href: "/clips",     title: "Sitcom klipler",     desc: "Gerçek diyaloglarda kelime ve kalıbın kullanımı — DE + TR çeviri.",  icon: ICONS.film },
+      { href: "/news",      title: "Almanca haberler",   desc: "A2/B1/B2 kısa haber metinleri + AI özet, sözlük ve sorular.",       icon: ICONS.read },
     ],
   },
   {
@@ -71,8 +78,12 @@ const GROUPS: ToolGroup[] = [
     title: "Araçlar",
     hint: "Kendi notlarından üret, ilerlemeni takip et.",
     items: [
-      { href: "/ai-workbench", title: "AI Çalışma Tezgâhı", desc: "PDF / DOCX / not yükle: özet + flashcard + quiz tek tıkla.", icon: ICONS.spark },
-      { href: "/library",      title: "Kütüphane",            desc: "Hazır CEFR setleri ve oluşturduklarını tek panelde çalış.",  icon: ICONS.book },
+      { href: "/grammar",       title: "Gramer atölyesi",   desc: "Konjugator, cümle doktoru, C-Test, Wortfamilie — tek hub.",      icon: ICONS.spark },
+      { href: "/fehlerheft",    title: "Hata defterim",      desc: "AI’nin yakaladığı hatalar haftalık quiz olarak geri gelir.",     icon: ICONS.book },
+      { href: "/woche",         title: "Haftalık özet",      desc: "Son 7 günün etkinlik grafiği, streak ve odaklanılacak hatalar.", icon: ICONS.spark },
+      { href: "/wortfamilie",   title: "Wortfamilie",        desc: "Bir kökten türeyen kelime ailelerini AI ile keşfet.",            icon: ICONS.spark },
+      { href: "/ai-workbench",  title: "AI Çalışma Tezgâhı", desc: "PDF / DOCX / not yükle: özet + flashcard + quiz tek tıkla.",     icon: ICONS.spark },
+      { href: "/library",       title: "Kütüphane",          desc: "Hazır CEFR setleri ve oluşturduklarını tek panelde çalış.",      icon: ICONS.book },
     ],
   },
 ];

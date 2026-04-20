@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   createProfile,
@@ -69,6 +70,16 @@ function ProfileOnboarding({ initialProfiles }: { initialProfiles: Profile[] }) 
             <p className="text-sm text-[color:var(--fg-muted)]">
               Çalışmalarının kaydedilmesi için bir profil seç ya da oluştur.
             </p>
+          </div>
+        </div>
+
+        <div className="mt-3 rounded-md border border-[color:var(--border)] p-3 text-sm">
+          <span className="font-semibold">Zaten hesabın var mı?</span>{" "}
+          <span className="text-[color:var(--fg-muted)]">
+            Bulut hesabınla giriş yap; tüm verilerin otomatik gelir.
+          </span>
+          <div className="mt-2">
+            <Link href="/auth" className="btn btn-primary btn-sm">Buluttan giriş yap</Link>
           </div>
         </div>
 

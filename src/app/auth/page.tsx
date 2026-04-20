@@ -11,8 +11,32 @@ import {
   subscribeSyncStatus,
   type SyncStatus,
 } from "@/lib/cloud-sync";
+import {
+  createProfile,
+  getActiveProfile,
+  listProfiles,
+  setActiveProfile,
+} from "@/lib/profile-store";
 
 type Mode = "signin" | "signup";
+
+/** After a cloud sign-in, make sure there is at least one local profile so
+ *  the ProfileGate dismisses. If the cloud snapshot already restored profiles,
+ *  this is a no-op. Otherwise we create a default student profile from the email. */
+function ensureLocalProfileFromCloud(email: string | null) {
+  if (typeof window === "undefined") return;
+  const all = listProfiles();
+  if (all.length === 0) {
+    const name = (email?.split("@")[0] ?? "Ben").slice(0, 24);
+    createProfile({ name, role: "student" }, true);
+    return;
+  }
+  // If profiles exist but none active (e.g. snapshot restored profiles but
+  // active key was empty), pick the first one as active.
+  if (!getActiveProfile()) {
+    setActiveProfile(all[0].id);
+  }
+}
 
 function relTime(ts: number): string {
   const s = Math.max(1, Math.round((Date.now() - ts) / 1000));
@@ -146,6 +170,7 @@ export default function AuthPage() {
           });
           setMode("signin");
         } else {
+          ensureLocalProfileFromCloud(email.trim());
           await pushSnapshot({ deviceLabel: detectDeviceLabel() });
           setMsg({ kind: "ok", text: "Hesap açıldı. Cihazındaki ilerleme buluta yüklendi." });
           setTimeout(() => router.push("/"), 700);
@@ -153,13 +178,17 @@ export default function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
+        const { data: who } = await supabase.auth.getUser();
+        const userEmailNow = who.user?.email ?? email.trim();
         const res = await pullSnapshot("replace");
         if (!res.ok) {
           setMsg({ kind: "error", text: `Giriş yapıldı ama veri çekilemedi: ${res.error}` });
         } else if (res.empty) {
+          ensureLocalProfileFromCloud(userEmailNow);
           await pushSnapshot({ deviceLabel: detectDeviceLabel() });
           setMsg({ kind: "ok", text: "Giriş yapıldı. Bu cihaz başlangıç oldu." });
         } else {
+          ensureLocalProfileFromCloud(userEmailNow);
           setMsg({ kind: "ok", text: `Giriş yapıldı. ${res.applied} öğe buluttan geldi.` });
         }
         setTimeout(() => {

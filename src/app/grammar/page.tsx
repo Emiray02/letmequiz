@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const TOOLS = [
+  { href: "/grammar/lessons",    title: "Konu anlatımı", desc: "A1–B1 gramer dersleri: kural, tablo, örnek, dikkat noktaları." },
   { href: "/grammar/konjugator", title: "Konjugator", desc: "Herhangi bir fiil — tüm şahıs ve zamanlar." },
   { href: "/grammar/doctor",     title: "Cümle doktoru", desc: "Cümle yapıştır — yapı, hatalar, alternatifler." },
   { href: "/cloze",              title: "C-Test (Cloze)", desc: "telc Lesetext'lerden otomatik boşluklu metin." },

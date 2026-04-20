@@ -83,6 +83,7 @@ const SECTIONS: Section[] = [
     title: "Gramer & Kelime",
     items: [
       { href: "/grammar", label: "Gramer atölyesi", icon: I.spark },
+      { href: "/grammar/lessons", label: "↳ Konu anlatımı", icon: I.book },
       { href: "/grammar/konjugator", label: "↳ Konjugator", icon: I.rotate },
       { href: "/grammar/doctor", label: "↳ Cümle doktoru", icon: I.spark },
       { href: "/wortfamilie", label: "Wortfamilie", icon: I.layers },

@@ -137,13 +137,26 @@ export default function VerbTrainer() {
         <div className="surface p-5">
           <p className="eyebrow">Tüm formlar — {verb.infinitive}</p>
           <ul className="mt-3 grid gap-1 text-sm">
-            {PRONOUNS.map((p) => (
-              <li key={p} className="flex items-center justify-between border-b border-[color:var(--border)] py-1 last:border-0">
-                <span className="text-[color:var(--fg-muted)]">{PRONOUN_LABEL[p]}</span>
-                <span className="font-semibold">{verb.forms[p]}</span>
-              </li>
-            ))}
+            {PRONOUNS.map((p) => {
+              // Hide the form for the currently-asked pronoun until the user submits,
+              // otherwise the sidebar spoils the answer.
+              const isCurrent = p === pronoun;
+              const reveal = !isCurrent || result !== "";
+              return (
+                <li key={p} className="flex items-center justify-between border-b border-[color:var(--border)] py-1 last:border-0">
+                  <span className="text-[color:var(--fg-muted)]">{PRONOUN_LABEL[p]}</span>
+                  <span className="font-semibold">
+                    {reveal ? verb.forms[p] : <span className="text-[color:var(--fg-subtle)]">———</span>}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
+          {result === "" ? (
+            <p className="mt-2 text-xs text-[color:var(--fg-subtle)]">
+              Sorulan zamirin cevabı kontrolden sonra açılır.
+            </p>
+          ) : null}
         </div>
       </aside>
     </div>

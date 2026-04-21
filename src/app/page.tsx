@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { listStudySets } from "@/lib/data";
-import { materialsTotals } from "@/lib/materials-data";
+import HomePlanCard from "@/components/home-plan-card";
 
 type Tile = { href: string; title: string; desc: string; icon: string };
 
@@ -34,7 +34,6 @@ function TileIcon({ d }: { d: string }) {
 
 export default async function HomePage() {
   const sets = await listStudySets();
-  const totals = materialsTotals();
   const totalCards = sets.reduce((s, x) => s + x.cardCount, 0);
 
   return (
@@ -57,15 +56,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div className="surface p-5 md:p-6 animate-slide-up">
-          <p className="eyebrow">Materyal envanteri</p>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div className="stat"><span className="stat-label">Lesetext</span><span className="stat-value">{totals.lesetexte}</span></div>
-            <div className="stat"><span className="stat-label">Hörtext</span><span className="stat-value">{totals.hoertexte}</span></div>
-            <div className="stat"><span className="stat-label">Kelime</span><span className="stat-value">{totals.bilingual.toLocaleString("tr-TR")}</span></div>
-            <div className="stat"><span className="stat-label">Setler</span><span className="stat-value">{sets.length}</span></div>
-          </div>
-        </div>
+        <HomePlanCard />
       </section>
 
       <section className="mt-12">

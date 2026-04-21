@@ -1,11 +1,11 @@
-// Service worker — v5 (2026-04-21) — verb trainer spoiler fix
+// Service worker — v6 (2026-04-21) — self-serve daily plan flow on home + /heute
 // Strategy:
 //   - HTML/navigation requests: NETWORK-FIRST (fresh design always wins, no stale UI)
 //   - Static assets (CSS, JS, images, fonts): cache-first with background refresh
 //   - API calls: bypass SW entirely
 // Bumping CACHE_NAME forces eviction of all previous caches on activate.
 
-const CACHE_NAME = "letmequiz-cache-v5";
+const CACHE_NAME = "letmequiz-cache-v6";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

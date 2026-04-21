@@ -1,11 +1,11 @@
-// Service worker — v3 (2026-04-20)
+// Service worker — v4 (2026-04-21) — UI simplification: role-aware sidebar + focused home
 // Strategy:
 //   - HTML/navigation requests: NETWORK-FIRST (fresh design always wins, no stale UI)
 //   - Static assets (CSS, JS, images, fonts): cache-first with background refresh
 //   - API calls: bypass SW entirely
 // Bumping CACHE_NAME forces eviction of all previous caches on activate.
 
-const CACHE_NAME = "letmequiz-cache-v3";
+const CACHE_NAME = "letmequiz-cache-v4";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
